@@ -32,6 +32,7 @@ public:
     // QGroupBox * btngroup;  //按钮组
     QVBoxLayout* btnlayout;  //按钮的排版
 
+
     //下面这一系列是各个界面的
     QVBoxLayout* layout1;
     QVBoxLayout* layout2;

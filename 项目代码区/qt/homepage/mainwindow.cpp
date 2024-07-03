@@ -1,5 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "todayweather.h"
+#include "historyweather.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -40,14 +42,14 @@ MainWindow::MainWindow(QWidget *parent)
     stackedwidget = new QStackedWidget(this);
 
     // 创建页面1
-    QWidget *page1 = new QWidget;
+    QWidget *page1 = new todayweather;
     QLabel *hlabel1 = new QLabel("界面1");
     QVBoxLayout *layout1 = new QVBoxLayout(page1);
     layout1->addWidget(hlabel1);
     stackedwidget->addWidget(page1);
 
     // 创建页面2
-    QWidget *page2 = new QWidget;
+    QWidget *page2 = new historyweather;
     QLabel *hlabel2 = new QLabel("界面2");
     QVBoxLayout *layout2 = new QVBoxLayout(page2);
     layout2->addWidget(hlabel2);
