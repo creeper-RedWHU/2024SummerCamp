@@ -3,12 +3,8 @@ import pymysql
 import urllib.request, urllib.error
 import json
 import multiprocessing
-import requests
 from bs4 import BeautifulSoup
 import time
-import queue
-
-
 '''
 数据库标准说明：
 MySQL型数据库
@@ -39,7 +35,6 @@ conn = pymysql.connect(
 )
 '''
 
-
 urlFirst = "https://lishi.tianqi.com/"
 urlThirdOfDate = "/"
 urlFinal = ".html"
@@ -47,11 +42,8 @@ cityList = {"长沙": "changsha", "武汉": "wuhan", "北京": "beijing", "杭�
             "南京": "nanjing"}
 findLinkDate = re.compile(r'<div class="th200">(.*?)</div>')
 findDataEach = re.compile(r'<div class="th140">(.*?)</div>')
-findLinkIP=re.compile(r'<td class="table-ip">(.*?)</td>')
-findLinkPort=re.compile(r'<td class="table-port">(.*?)</td>')
 dateMax = {1: 31, 2: 28, 3: 31, 4: 30, 5: 31, 6: 30, 7: 31, 8: 31, 9: 30, 10: 31, 11: 30, 12: 31, 20: 29}
-failyear=queue.Queue()
-failmonth=queue.Queue()
+
 
 def getURL(address, year, month):
     url = urlFirst
@@ -104,8 +96,6 @@ def get_data(url, city, year, month):
             html = askURL(url)
             soup = BeautifulSoup(html, "html.parser")
     if yc>=10:
-        failyear.put(year)
-        failmonth.put(month)
         return False
     for item in soup.find_all('ul', class_="thrui"):
         item = str(item)
@@ -162,13 +152,13 @@ def whetherhas(ct,year,month):
     )
     cursor=conn.cursor()
     ans=False
-    SQLSentence = "select * from climate"
+    SQLSentence = "select * from climate where city='%s' and year= %d and month=%d"
+    dev=(ct,year,month)
+    SQLSentence%=dev
     cursor.execute(SQLSentence)
     myResult=cursor.fetchall()
-    for i in range(myResult.__len__()):
-        if myResult[i][2] == ct and myResult[i][3] == year and myResult[i][4]==month:
-            ans=True
-            break
+    if myResult.__len__()>0:
+        ans=True
     cursor.close()
     conn.close()
     return ans
@@ -200,12 +190,6 @@ def fetchData(ct,startYear,endYear,startMonth,endMonth):
                     print(ct, ' ', year, month, "ok")
                     time.sleep(1)
 
-def get_proxy_list():
-    #获取代理ip
-    head = {
-        "User-Agent": "Mozilla / 5.0(Windows NT 10.0; Win64; x64) AppleWebKit / 537.36(KHTML, like Gecko) Chrome / 80.0.3987.122  Safari / 537.36"
-    }
-    url="https://proxycompass.com/cn/free-proxy/"
 
 
 if __name__ == '__main__':
@@ -221,16 +205,10 @@ if __name__ == '__main__':
         print("City ",city,"'s data from",syear,".",smonth,"to",eyear,".",emonth,end='')
         print()
     '''
-    '''
     city="武汉"
     syear=2012
     smonth=7
-    eyear=2015
+    eyear=2018
     emonth=6
     fetchData(city,syear,eyear,smonth,emonth)
-    while failyear.empty() == False:
-        yearnow=failyear.get()
-        monthnow=failmonth.get()
-        fetchData(city,yearnow,yearnow,monthnow,monthnow)
-    '''
-    get_proxy_list()
+
