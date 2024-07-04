@@ -1,4 +1,5 @@
 debug/datavisualization.o
+debug/forecast.o
 debug/historyweather.o
 debug/login_register.o
 debug/main.o
@@ -6,6 +7,7 @@ debug/mainwindow.o
 debug/todayweather.o
 debug/qrc_pic.o
 debug/moc_datavisualization.o
+debug/moc_forecast.o
 debug/moc_historyweather.o
 debug/moc_login_register.o
 debug/moc_mainwindow.o

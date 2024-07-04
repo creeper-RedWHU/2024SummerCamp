@@ -2,7 +2,8 @@
 #include "ui_historyweather.h"
 #include <QDebug>
 
-int cityidx=0,yearidx=0,monthidx=0;
+int cityidx=0, yearidx=0, monthidx=0;
+
 historyweather::historyweather(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::historyweather)
@@ -10,7 +11,7 @@ historyweather::historyweather(QWidget *parent)
     ui->setupUi(this);
 
     this->setLayout(nullptr);
-    QVBoxLayout * vlayout = new QVBoxLayout(this); // 初始化垂直布局
+    QVBoxLayout *vlayout = new QVBoxLayout(this); // 初始化垂直布局
 
     btn = new QPushButton("查询", this);  // 查询按钮
     cityBox = new QComboBox(this);
@@ -43,7 +44,7 @@ historyweather::historyweather(QWidget *parent)
     monthBox->addItem("十一月");
     monthBox->addItem("十二月");
 
-    QHBoxLayout * hlayout = new QHBoxLayout;
+    QHBoxLayout *hlayout = new QHBoxLayout;
     hlayout->addWidget(cityBox);
     hlayout->addWidget(yearBox);
     hlayout->addWidget(monthBox);
@@ -52,8 +53,7 @@ historyweather::historyweather(QWidget *parent)
     vlayout->addLayout(hlayout);  // 添加水平布局到垂直布局
     vlayout->addWidget(weathertable);  // 添加表格到垂直布局
 
-    // this->setLayout(nullptr);
-    // this->setLayout(vlayout);  // 设置整体布局
+    this->setLayout(vlayout);  // 设置整体布局
 
     QObject::connect(cityBox, QOverload<int>::of(&QComboBox::currentIndexChanged),
                      [=](int index) mutable {
@@ -70,6 +70,104 @@ historyweather::historyweather(QWidget *parent)
 
     // 点击查询按钮时连接到槽函数
     QObject::connect(btn, &QPushButton::clicked, this, &historyweather::showweather);
+
+    // Apply QSS stylesheet
+    QString styleSheet = R"(
+        /* General Widget Background */
+        historyweather {
+            background-color: #F7F9FC;
+        }
+
+        /* ComboBox Styling */
+        QComboBox {
+            background-color: #FFFFFF;
+            border: 1px solid #E1E8ED;
+            border-radius: 5px;
+            padding: 5px;
+            font-family: "Arial", sans-serif;
+            font-size: 14px;
+            color: #333333;
+        }
+
+        QComboBox::drop-down {
+            subcontrol-origin: padding;
+            subcontrol-position: top right;
+            width: 15px;
+            border-left-width: 1px;
+            border-left-color: #E1E8ED;
+            border-left-style: solid;
+            border-top-right-radius: 3px;
+            border-bottom-right-radius: 3px;
+        }
+
+        QComboBox::down-arrow {
+            image: url(:/icons/down_arrow.png); /* Ensure you have a suitable icon */
+            width: 10px;
+            height: 10px;
+        }
+
+        QComboBox QAbstractItemView {
+            background-color: #FFFFFF;
+            border: 1px solid #E1E8ED;
+            selection-background-color: #E6EDF5;
+            selection-color: #333333;
+        }
+
+        /* PushButton Styling */
+        QPushButton {
+            background-color: #4CAF50;
+            color: #FFFFFF;
+            border: 1px solid #4CAF50;
+            border-radius: 5px;
+            padding: 10px 20px;
+            font-family: "Arial", sans-serif;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        QPushButton:hover {
+            background-color: #45A049;
+            border: 1px solid #45A049;
+        }
+
+        QPushButton:pressed {
+            background-color: #3E8E41;
+            border: 1px solid #3E8E41;
+        }
+
+        /* TableView Styling */
+        QTableView {
+            background-color: #FFFFFF;
+            border: 1px solid #E1E8ED;
+            gridline-color: #E1E8ED;
+            font-family: "Arial", sans-serif;
+            font-size: 14px;
+            color: #333333;
+        }
+
+        QHeaderView::section {
+            background-color: #F1F3F5;
+            color: #333333;
+            padding: 5px;
+            border: none;
+            border-bottom: 1px solid #E1E8ED;
+            border-right: 1px solid #E1E8ED;
+        }
+
+        QHeaderView::section:last {
+            border-right: none;
+        }
+
+        QTableView::item {
+            border-bottom: 1px solid #E1E8ED;
+        }
+
+        QTableView::item:selected {
+            background-color: #E6EDF5;
+            color: #333333;
+        }
+    )";
+    this->setStyleSheet(styleSheet);
 }
 
 void historyweather::showweather()

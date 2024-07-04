@@ -3,6 +3,7 @@
 #include "todayweather.h"
 #include "datavisualization.h"
 #include "historyweather.h"
+#include "forecast.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -10,6 +11,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
+    this->setWindowTitle("主页");
     // 设置默认占满屏幕并最大化显示
     QScreen *screen = QApplication::primaryScreen();
     QRect screenG = screen->geometry();   // 获取主屏幕的几何信息
@@ -64,7 +66,7 @@ MainWindow::MainWindow(QWidget *parent)
     stackedwidget->addWidget(page3);
 
     // 创建页面4
-    QWidget *page4 = new QWidget;
+    QWidget *page4 = new forecast;
     QLabel *hlabel4 = new QLabel("界面4");
     QVBoxLayout *layout4 = new QVBoxLayout(page4);
     layout4->addWidget(hlabel4);

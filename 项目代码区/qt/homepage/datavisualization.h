@@ -5,10 +5,15 @@
 #include <QtCharts>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
+#include <QComboBox>
+#include <QPushButton>
+#include <QGridLayout>
+#include <QLabel>
 
 namespace Ui {
 class datavisualization;
 }
+
 
 class datavisualization : public QWidget
 {
@@ -36,11 +41,18 @@ public:
     QChartView *chartview3;  //图表视图
     QChartView *chartview4;  //图表视图
 
+    QComboBox *cityComboBox;
+    QComboBox *startYearComboBox;
+    QComboBox *endYearComboBox;
+
 
 
     void updateTooltip1(QPointF point, bool state);
     void updateTooltip2(QPieSlice *slice, bool state);
     void updateTooltip3(bool hovered, int index, QBarSet* barset);
+
+    void mydraw();
+
 
 
 private:

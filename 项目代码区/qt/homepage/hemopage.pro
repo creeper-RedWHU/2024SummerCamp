@@ -13,6 +13,7 @@ CONFIG += c++17
 
 SOURCES += \
     datavisualization.cpp \
+    forecast.cpp \
     historyweather.cpp \
     login_register.cpp \
     main.cpp \
@@ -21,6 +22,7 @@ SOURCES += \
 
 HEADERS += \
     datavisualization.h \
+    forecast.h \
     historyweather.h \
     login_register.h \
     mainwindow.h \
@@ -28,6 +30,7 @@ HEADERS += \
 
 FORMS += \
     datavisualization.ui \
+    forecast.ui \
     historyweather.ui \
     login_register.ui \
     mainwindow.ui \

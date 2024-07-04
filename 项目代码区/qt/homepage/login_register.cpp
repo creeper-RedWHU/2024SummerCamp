@@ -8,6 +8,8 @@ login_register::login_register(QWidget *parent)
 {
     ui->setupUi(this);
 
+    this->setWindowTitle("登录界面");
+
     // 创建垂直布局管理器
     QVBoxLayout *vbox = new QVBoxLayout(this);
 

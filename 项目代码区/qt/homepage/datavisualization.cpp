@@ -1,12 +1,71 @@
 #include "datavisualization.h"
 #include "ui_datavisualization.h"
 #include <QtCharts>
+#include <QDebug>
 
+// int cityidx=0,endyearidx=0,startyearidx=0;
 datavisualization::datavisualization(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::datavisualization)
 {
     ui->setupUi(this);
+
+    QHBoxLayout *controlLayout = new QHBoxLayout();
+
+    cityComboBox = new QComboBox(this);
+    cityComboBox->addItems({"北京", "上海", "广州"});
+    controlLayout->addWidget(new QLabel("选择城市:", this));
+    controlLayout->addWidget(cityComboBox);
+
+    startYearComboBox = new QComboBox(this);
+    startYearComboBox->addItems({"2020", "2021", "2022"});
+    controlLayout->addWidget(new QLabel("选择起始年份:", this));
+    controlLayout->addWidget(startYearComboBox);
+
+    endYearComboBox = new QComboBox(this);
+    endYearComboBox->addItems({"2021", "2022", "2023"});
+    controlLayout->addWidget(new QLabel("选择中止年份:", this));
+    controlLayout->addWidget(endYearComboBox);
+
+    QPushButton *drawButton = new QPushButton("绘制", this);
+    controlLayout->addWidget(drawButton);
+    // connect(drawButton, &QPushButton::clicked, this, );
+
+    setStyleSheet(R"(
+        QWidget {
+            background-color: #F7F7F8;
+            color: #000000;
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        }
+        QLabel {
+            font-size: 14px;
+        }
+        QComboBox {
+            padding: 5px;
+            border: 1px solid #CCCCCC;
+            border-radius: 4px;
+            background-color: #FFFFFF;
+            font-size: 14px;
+        }
+        QComboBox::drop-down {
+            border-left: 1px solid #CCCCCC;
+        }
+        QPushButton {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            background-color: #10A37F;
+            color: #FFFFFF;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        QPushButton:hover {
+            background-color: #0E8C6C;
+        }
+        QPushButton:pressed {
+            background-color: #0C7259;
+        }
+    )");
 
     // 创建数据系列
     series1 = new QLineSeries;
@@ -88,20 +147,39 @@ datavisualization::datavisualization(QWidget *parent)
     connect(series3, &QBarSeries::hovered, this, &datavisualization::updateTooltip3);
 
     // 布局设置
-    QVBoxLayout *vlayout1 = new QVBoxLayout;
-    vlayout1->addWidget(chartview1);
-    vlayout1->addWidget(chartview2);
+    QHBoxLayout *hlayout1 = new QHBoxLayout;
+    hlayout1->addWidget(chartview1);
+    hlayout1->addWidget(chartview2);
 
-    QVBoxLayout *vlayout2 = new QVBoxLayout;
-    vlayout2->addWidget(chartview3);
-    vlayout2->addWidget(chartview4);
+    QHBoxLayout *hlayout2 = new QHBoxLayout;
+    hlayout2->addWidget(chartview3);
+    hlayout2->addWidget(chartview4);
 
-    QHBoxLayout *hlayout = new QHBoxLayout;
-    hlayout->addLayout(vlayout1);
-    hlayout->addLayout(vlayout2);
+    QVBoxLayout *vlayout = new QVBoxLayout;
+    vlayout->addLayout(controlLayout);
+    vlayout->addLayout(hlayout1);
+    vlayout->addLayout(hlayout2);
+    // controlLayout
 
     this->setLayout(nullptr);
-    this->setLayout(hlayout);
+    this->setLayout(vlayout);
+
+
+    // QObject::connect(cityComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged),
+    //                  [=](int index) mutable {
+    //                      cityidx = index;
+    //                  });
+    // QObject::connect(endYearComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged),
+    //                  [=](int index) mutable {
+    //                      endyearidx = index;
+    //                  });
+    // QObject::connect(startYearComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged),
+    //                  [=](int index) mutable {
+    //                      startyearidx = index;
+    //                  });
+
+    // 点击查询按钮时连接到槽函数
+    // QObject::connect(drawButton, &QPushButton::clicked, this, &datavisualization::mydraw);
 }
 
 datavisualization::~datavisualization()
@@ -110,6 +188,12 @@ datavisualization::~datavisualization()
 
 }
 
+
+//根据数据绘制图表
+void datavisualization::mydraw()
+{
+    // qDebug()<<cityComboBox->currentIndex()<<" "<<startYearComboBox->currentText()<<" "<<endYearComboBox->currentText();
+}
 //处理折现图的悬停信号
 void datavisualization::updateTooltip1(QPointF point, bool state)
 {

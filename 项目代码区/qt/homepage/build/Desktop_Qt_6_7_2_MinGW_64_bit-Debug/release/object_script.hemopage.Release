@@ -1,4 +1,5 @@
 release/datavisualization.o
+release/forecast.o
 release/historyweather.o
 release/login_register.o
 release/main.o
@@ -6,6 +7,7 @@ release/mainwindow.o
 release/todayweather.o
 release/qrc_pic.o
 release/moc_datavisualization.o
+release/moc_forecast.o
 release/moc_historyweather.o
 release/moc_login_register.o
 release/moc_mainwindow.o

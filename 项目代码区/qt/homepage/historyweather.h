@@ -21,7 +21,6 @@ public:
     explicit historyweather(QWidget *parent = nullptr);
     ~historyweather();
 
-
     QComboBox *cityBox,*yearBox,*monthBox;  //三个选择栏
     QPushButton *btn;  //查询按钮
     QTableView *weathertable;  //天气表
