@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "todayweather.h"
+#include "datavisualization.h"
 #include "historyweather.h"
 
 MainWindow::MainWindow(QWidget *parent)
@@ -56,7 +57,7 @@ MainWindow::MainWindow(QWidget *parent)
     stackedwidget->addWidget(page2);
 
     // 创建页面3
-    QWidget *page3 = new QWidget;
+    QWidget *page3 = new datavisualization;
     QLabel *hlabel3 = new QLabel("界面3");
     QVBoxLayout *layout3 = new QVBoxLayout(page3);
     layout3->addWidget(hlabel3);
