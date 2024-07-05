@@ -4,11 +4,21 @@
 #include <QDebug>
 
 // int cityidx=0,endyearidx=0,startyearidx=0;
+
+
 datavisualization::datavisualization(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::datavisualization)
 {
     ui->setupUi(this);
+
+    QSqlDatabase db=QSqlDatabase::addDatabase("QMYSQL");
+    db.setHostName("127.0.0.1");
+    db.setPort(3306);
+    db.setDatabaseName("hospital"); // 设置数据库名
+    db.setUserName("root"); // 设置用户名
+    db.setPassword("Seasons0511"); // 设置密码
+    db.open();
 
     QHBoxLayout *controlLayout = new QHBoxLayout();
 
@@ -67,24 +77,57 @@ datavisualization::datavisualization(QWidget *parent)
         }
     )");
 
-    // 创建数据系列
+
+    // 将查询结果添加到数据系列中
+    QSqlQuery query;
+    query.exec("SELECT month, max_temperature FROM climate");
     series1 = new QLineSeries;
-    series1->append(0, 6);
-    series1->append(2, 4);
-    series1->append(3, 8);
-    series1->append(7, 4);
-    series1->append(10, 5);
+    while (query.next()) {
+        int x_value = query.value(0).toInt();
+        int y_value = query.value(1).toInt();
+        series1->append(x_value, y_value);
+    }
+
+
+    // series1 = new QLineSeries;
+    // series1->append(0, 6);
+    // series1->append(2, 4);
+    // series1->append(3, 8);
+    // series1->append(7, 4);
+    // series1->append(10, 5);
 
     series2 = new QPieSeries;
-    series2->append("阴天", 15);
-    series2->append("雨天", 7);
-    series2->append("晴天", 7);
+    QSqlQuery query1;
+    query1.exec("SELECT weather FROM climate");
+    int count1=0;  //阴
+    int count2=0;  //小雨
+    int count3=0;  //晴
+    while (query.next()) {
+
+        QString weather = query1.value(0).toString();
+        // 根据天气情况更新计数器
+        if (weather == "阴") {
+            count1++;
+        } else if (weather == "小雨") {
+            count2++;
+        } else if (weather == "晴") {
+            count3++;
+        }
+
+    }
+    series2->append("阴", count1);
+    series2->append("小雨", count2);
+    series2->append("晴", count3);
+
+
 
     series3 = new QBarSeries;
     barset1 = new QBarSet("东风");
     barset2 = new QBarSet("西风");
     barset3 = new QBarSet("南风");
     barset4 = new QBarSet("北风");
+
+
 
     *barset1 << 5;
     *barset2 << 14;
