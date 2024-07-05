@@ -27,15 +27,25 @@ datavisualization::datavisualization(QWidget *parent)
     controlLayout->addWidget(new QLabel("选择城市:", this));
     controlLayout->addWidget(cityComboBox);
 
-    startYearComboBox = new QComboBox(this);
-    startYearComboBox->addItems({"2020", "2021", "2022"});
-    controlLayout->addWidget(new QLabel("选择起始年份:", this));
-    controlLayout->addWidget(startYearComboBox);
+    YearComboBox = new QComboBox(this);
+    YearComboBox->addItems({"2020", "2021", "2022"});
+    controlLayout->addWidget(new QLabel("选择年份:", this));
+    controlLayout->addWidget(YearComboBox);
 
-    endYearComboBox = new QComboBox(this);
-    endYearComboBox->addItems({"2021", "2022", "2023"});
-    controlLayout->addWidget(new QLabel("选择中止年份:", this));
-    controlLayout->addWidget(endYearComboBox);
+    MonthComboBox = new QComboBox(this);
+    MonthComboBox->addItems({"1","2","3","4","5","6","7","8","9","10","11","12"});
+    controlLayout->addWidget(new QLabel("选择月份:", this));
+    controlLayout->addWidget(MonthComboBox);
+
+    startDayComboBox = new QComboBox(this);
+    startDayComboBox->addItems({"1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31"});
+    controlLayout->addWidget(new QLabel("选择起始日期:", this));
+    controlLayout->addWidget(startDayComboBox);
+
+    endDayComboBox = new QComboBox(this);
+    endDayComboBox->addItems({"1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31"});
+    controlLayout->addWidget(new QLabel("选择中止日期:", this));
+    controlLayout->addWidget(endDayComboBox);
 
     QPushButton *drawButton = new QPushButton("绘制", this);
     controlLayout->addWidget(drawButton);
@@ -235,11 +245,11 @@ datavisualization::~datavisualization()
 
 // 点击绘制按钮时触发的槽函数
 void datavisualization::onDrawButtonClicked() {
-    int startYear = startYearComboBox->currentText().toInt();
-    int endYear = endYearComboBox->currentText().toInt();
+    int startDay = startDayComboBox->currentText().toInt();
+    int endDay = endDayComboBox->currentText().toInt();
 
-    if (startYear > endYear) {
-        QMessageBox::warning(this, "年份错误", "起始年份不能大于中止年份，请重新选择！");
+    if (startDay > endDay) {
+        QMessageBox::warning(this, "日期错误", "起始日期不能大于中止日期，请重新选择！");
         return;
     }
 
