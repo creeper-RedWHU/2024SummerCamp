@@ -97,8 +97,24 @@ datavisualization::datavisualization(QWidget *parent)
 
 
     // 将查询结果添加到数据系列中
+
+    QString Qcity = cityComboBox->currentText();
+    int Qyear = YearComboBox->currentText().toInt();
+    int Qmonth = MonthComboBox->currentText().toInt();
+    int Qstartday = startDayComboBox->currentText().toInt();
+    int Qendday = endDayComboBox->currentText().toInt();
+
+
+    //最高气温折线图
     QSqlQuery query;
-    query.exec("SELECT month, max_temperature FROM climate");
+    query.bindValue(":city", Qcity);
+    query.bindValue(":year", Qyear);
+    query.bindValue(":month", Qmonth);
+    query.bindValue(":sday", Qstartday);
+    query.bindValue(":eday", Qendday);
+
+
+    query.exec("SELECT day, max_temperature FROM climate where city =:city and year =:year  and month = :month and day<=:sday and day>=:sday");
     series1 = new QLineSeries;
     while (query.next()) {
         int x_value = query.value(0).toInt();
@@ -107,20 +123,29 @@ datavisualization::datavisualization(QWidget *parent)
     }
 
 
-    // series1 = new QLineSeries;
-    // series1->append(0, 6);
-    // series1->append(2, 4);
-    // series1->append(3, 8);
-    // series1->append(7, 4);
-    // series1->append(10, 5);
 
+//天气状况饼状图
     series2 = new QPieSeries;
     QSqlQuery query1;
-    query1.exec("SELECT weather FROM climate");
+    query1.bindValue(":city", Qcity);
+    query1.bindValue(":year", Qyear);
+    query1.bindValue(":month", Qmonth);
+    query1.bindValue(":sday", Qstartday);
+    query1.bindValue(":eday", Qendday);
+    query1.exec("SELECT weather FROM climate  where city =:city and year =:year  and month = :month and day<=:sday and day>=:sday");
     int count1=0;  //阴
     int count2=0;  //小雨
     int count3=0;  //晴
-    while (query.next()) {
+    int count4=0;  //多云
+    int count5=0;  //中雨
+    int count6=0;  //雾~多云
+    int count7=0;  //雾~晴
+    int count8=0;  //晴~多云
+    int count9=0;  //多云~晴
+    int count10=0; //小雨~阴
+    int count11=0; //雷阵雨~阵雨
+    int count12=0; //雷阵雨~多云
+    while (query1.next()) {
 
         QString weather = query1.value(0).toString();
         // 根据天气情况更新计数器
@@ -130,64 +155,162 @@ datavisualization::datavisualization(QWidget *parent)
             count2++;
         } else if (weather == "晴") {
             count3++;
+        } else if (weather == "多云") {
+            count4++;
+        } else if (weather == "中雨") {
+            count5++;
+        } else if (weather == "雾~多云") {
+            count6++;
+        } else if (weather == "雾~晴") {
+            count7++;
+        } else if (weather == "晴~多云") {
+            count8++;
+        } else if (weather == "多云~晴") {
+            count9++;
+        } else if (weather == "小雨~阴") {
+            count10++;
+        } else if (weather == "雷阵雨~阵雨") {
+            count11++;
+        } else if (weather == "雷阵雨~多云") {
+            count12++;
         }
 
     }
     series2->append("阴", count1);
     series2->append("小雨", count2);
     series2->append("晴", count3);
+    series2->append("多云", count4);
+    series2->append("中雨", count5);
+    series2->append("雾~多云", count6);
+    series2->append("雾~晴", count7);
+    series2->append("晴~多云", count8);
+    series2->append("多云~晴", count9);
+    series2->append("小雨~阴", count10);
+    series2->append("雷阵雨~阵雨", count11);
+    series2->append("雷阵雨~多云", count12);
 
 
+
+//风向柱状图
 
     series3 = new QBarSeries;
+
+    QSqlQuery query2;
+    query2.bindValue(":city", Qcity);
+    query2.bindValue(":year", Qyear);
+    query2.bindValue(":month", Qmonth);
+    query2.bindValue(":sday", Qstartday);
+    query2.bindValue(":eday", Qendday);
+    query2.exec("SELECT wind_direction FROM climate WHERE city = :city AND year = :year AND month = :month AND day BETWEEN :sday AND :eday");
+
+    // 初始化八个风向的 QBarSet
     barset1 = new QBarSet("东风");
     barset2 = new QBarSet("西风");
     barset3 = new QBarSet("南风");
     barset4 = new QBarSet("北风");
+    barset5 = new QBarSet("东南风");
+    barset6 = new QBarSet("东北风");
+    barset7 = new QBarSet("西南风");
+    barset8 = new QBarSet("西北风");
 
+    // 初始化八个风向的风力计数器
+    int wind1 = 0;  // 东风
+    int wind2 = 0;  // 西风
+    int wind3 = 0;  // 南风
+    int wind4 = 0;  // 北风
+    int wind5 = 0;  // 东南风
+    int wind6 = 0;  // 东北风
+    int wind7 = 0;  // 西南风
+    int wind8 = 0;  // 西北风
 
+    while (query2.next()) {
+        QString wind_direction = query2.value(0).toString();
+        // 根据风向更新风力计数器
+        if (wind_direction == "东风") {
+            wind1++;
+        } else if (wind_direction == "西风") {
+            wind2++;
+        } else if (wind_direction == "南风") {
+            wind3++;
+        } else if (wind_direction == "北风") {
+            wind4++;
+        } else if (wind_direction == "东南风") {
+            wind5++;
+        } else if (wind_direction == "东北风") {
+            wind6++;
+        } else if (wind_direction == "西南风") {
+            wind7++;
+        } else if (wind_direction == "西北风") {
+            wind8++;
+        }
+    }
 
-    *barset1 << 5;
-    *barset2 << 14;
-    *barset3 << 9;
-    *barset4 << 2;
+    // 将风力计数器的值添加到对应的 QBarSet 中
+    *barset1 << wind1;
+    *barset2 << wind2;
+    *barset3 << wind3;
+    *barset4 << wind4;
+    *barset5 << wind5;
+    *barset6 << wind6;
+    *barset7 << wind7;
+    *barset8 << wind8;
 
+    // 将八个风向的 QBarSet 添加到 QBarSeries 中
     series3->append(barset1);
     series3->append(barset2);
     series3->append(barset3);
     series3->append(barset4);
+    series3->append(barset5);
+    series3->append(barset6);
+    series3->append(barset7);
+    series3->append(barset8);
 
+
+//最低气温折线图
+
+    QSqlQuery query3;
+    query3.bindValue(":city", Qcity);
+    query3.bindValue(":year", Qyear);
+    query3.bindValue(":month", Qmonth);
+    query3.bindValue(":sday", Qstartday);
+    query3.bindValue(":eday", Qendday);
+
+
+    query3.exec("SELECT day, min_temperature FROM climate where city =:city and year =:year  and month = :month and day<=:sday and day>=:sday");
     series4 = new QLineSeries;
-    series4->append(2, 5);
-    series4->append(3, 7);
-    series4->append(6, 7);
-    series4->append(7, 3);
-    series4->append(10, 4);
+    while (query3.next()) {
+        int x_value = query.value(0).toInt();
+        int y_value = query.value(1).toInt();
+        series4->append(x_value, y_value);
+    }
+
+
+
 
     // 创建图表并添加数据系列
     chart1 = new QChart();
     chart1->legend()->hide();
     chart1->addSeries(series1);
     chart1->createDefaultAxes();
-    chart1->setTitle("折线图样例");
+    chart1->setTitle("最高气温折线图");
 
     chart2 = new QChart();
     chart2->legend()->hide();
     chart2->addSeries(series2);
     chart2->createDefaultAxes();
-    chart2->setTitle("饼状图样例");
+    chart2->setTitle("天气饼状图");
 
     chart3 = new QChart();
     chart3->legend()->hide();
     chart3->addSeries(series3);
     chart3->createDefaultAxes();
-    chart3->setTitle("柱状图样例");
+    chart3->setTitle("风向柱状图");
 
     chart4 = new QChart();
     chart4->legend()->hide();
     chart4->addSeries(series4);
     chart4->createDefaultAxes();
-    chart4->setTitle("简单图表4");
+    chart4->setTitle("最低气温折线图");
 
     // 创建图表视图并设置渲染提示
     chartview1 = new QChartView(chart1);

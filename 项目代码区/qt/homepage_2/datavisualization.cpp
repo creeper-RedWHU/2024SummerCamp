@@ -15,7 +15,7 @@ datavisualization::datavisualization(QWidget *parent)
     QSqlDatabase db=QSqlDatabase::addDatabase("QMYSQL");
     db.setHostName("127.0.0.1");
     db.setPort(3306);
-    db.setDatabaseName("hospital"); // 设置数据库名
+    db.setDatabaseName("SummerCamp"); // 设置数据库名
     db.setUserName("root"); // 设置用户名
     db.setPassword("Seasons0511"); // 设置密码
     db.open();
@@ -80,7 +80,8 @@ datavisualization::datavisualization(QWidget *parent)
 
     // 将查询结果添加到数据系列中
     QSqlQuery query;
-    query.exec("SELECT month, max_temperature FROM climate");
+    QString Qcity = cityComboBox->currentText();
+    query.exec("SELECT day, max_temperature FROM climate where city like '' and year like  and month like ");
     series1 = new QLineSeries;
     while (query.next()) {
         int x_value = query.value(0).toInt();
