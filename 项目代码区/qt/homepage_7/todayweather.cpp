@@ -108,9 +108,9 @@ bool todayweather::connectToDatabase()
 
 void todayweather::drawWeather(const QString &weatherType)
 {
-    QPixmap weatherpyin(":/weather/weatherpic/overcas.png");
-    QPixmap weatherpqing(":/weather/weatherpic/sunny.png");
-    QPixmap weatherpduoyun(":/weather/weatherpic/cloudy.png");
+    QPixmap weatherpyin(":/weather/weatherp/overcas.png");
+    QPixmap weatherpqing(":/weather/weatherp/sunny.png");
+    QPixmap weatherpduoyun(":/weather/weatherp/cloudy.png");
 
     if (weatherType == "阴")
         weatherLabel->setPixmap(weatherpyin);

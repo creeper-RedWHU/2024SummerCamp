@@ -21,7 +21,7 @@ datavisualization::datavisualization(QWidget *parent)
     QSqlDatabase db=QSqlDatabase::addDatabase("QMYSQL");
     db.setHostName("127.0.0.1");
     db.setPort(3306);
-    db.setDatabaseName("hospital"); // 设置数据库名
+    db.setDatabaseName("data"); // 设置数据库名
     db.setUserName("root"); // 设置用户名
     db.setPassword("123456"); // 设置密码
     db.open();
