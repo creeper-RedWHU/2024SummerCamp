@@ -29,12 +29,12 @@ datavisualization::datavisualization(QWidget *parent)
     QHBoxLayout *controlLayout = new QHBoxLayout();
 
     cityComboBox = new QComboBox(this);
-    cityComboBox->addItems({"北京", "上海", "广州"});
+    cityComboBox->addItems({"北京", "上海", "长沙"，"南京","杭州","武汉"});
     controlLayout->addWidget(new QLabel("选择城市:", this));
     controlLayout->addWidget(cityComboBox);
 
     YearComboBox = new QComboBox(this);
-    YearComboBox->addItems({"2020", "2021", "2022"});
+    YearComboBox->addItems({"2011","2012","2013","2014","2015","2016","2017","2018","2019","2020", "2021", "2022","2023","2024"});
     controlLayout->addWidget(new QLabel("选择年份:", this));
     controlLayout->addWidget(YearComboBox);
 
@@ -145,6 +145,8 @@ datavisualization::datavisualization(QWidget *parent)
     int count10=0; //小雨~阴
     int count11=0; //雷阵雨~阵雨
     int count12=0; //雷阵雨~多云
+    int count13=0; //多云~小雨
+    int count14=0;//雷阵雨
     while (query1.next()) {
 
         QString weather = query1.value(0).toString();
@@ -173,6 +175,10 @@ datavisualization::datavisualization(QWidget *parent)
             count11++;
         } else if (weather == "雷阵雨~多云") {
             count12++;
+        }else if (weather == "多云~小雨") {
+            count13++;
+        }else if (weather == "雷阵雨") {
+            count14++;
         }
 
     }
@@ -188,7 +194,8 @@ datavisualization::datavisualization(QWidget *parent)
     series2->append("小雨~阴", count10);
     series2->append("雷阵雨~阵雨", count11);
     series2->append("雷阵雨~多云", count12);
-
+    series2->append("多云~小雨", count13);
+    series2->append("雷阵雨", count14);
 
 
     //风向柱状图
@@ -225,7 +232,7 @@ datavisualization::datavisualization(QWidget *parent)
 
     while (query2.next()) {
         QString wind_direction = query2.value(0).toString();
-        // 根据风向更新风力计数器
+        // 根据风向更新计数器
         if (wind_direction == "东风") {
             wind1++;
         } else if (wind_direction == "西风") {
