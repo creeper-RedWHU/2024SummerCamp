@@ -44,8 +44,10 @@ public:
     QChartView *chartview4;  //图表视图
 
     QComboBox *cityComboBox;
-    QComboBox *startYearComboBox;
-    QComboBox *endYearComboBox;
+    QComboBox *YearComboBox;
+    QComboBox *MonthComboBox;
+    QComboBox *startDayComboBox;
+    QComboBox *endDayComboBox;
 
 
 
