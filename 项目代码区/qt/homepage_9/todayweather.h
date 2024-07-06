@@ -16,7 +16,6 @@
 #include <QPushButton>
 #include <QDate>
 #include <QString>
-#include "sectionwidget.h"
 
 namespace Ui {
 class todayweather;
@@ -45,14 +44,11 @@ public:
     QVBoxLayout *mainLayout;
     QHBoxLayout *topLayout;
 
-    SectionWidget *section1;
-    SectionWidget *section2;
-    SectionWidget *section3;
-
     void search();
     bool connectToDatabase();  // 连接数据库
     void showweather(QString maxt, QString mint, QString weather, QString wind_d, QString wind_s);
     void drawWeather(const QString &weatherType);
+    void clearWeatherDisplay();
 
 private:
     Ui::todayweather *ui;
