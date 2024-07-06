@@ -228,7 +228,9 @@ void todayweather::clearWeatherDisplay()
         delete windsLabel;
         windsLabel = nullptr;
     }
-    weatherLabel->clear();
+    if (weatherLabel) {
+        weatherLabel->clear();
+    }
 }
 
 todayweather::~todayweather()
