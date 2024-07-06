@@ -99,12 +99,18 @@ login_register::~login_register()
 
 bool login_register::connectToDatabase()
 {
-    db = QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("localhost");
-    db.setDatabaseName("data");
+    // db = QSqlDatabase::addDatabase("QMYSQL");
+    // db.setHostName("localhost");
+    // db.setDatabaseName("data");
+    // db.setUserName("root");
+    // db.setPassword("123456");
+    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");// 建立和QSQLITE数据库的连接
+    db.setHostName("127.0.0.1");  //连接本地主机
+    db.setPort(3306);
     db.setUserName("root");
-    db.setPassword("123456");
-
+    //设置数据库的密码
+    db.setPassword("mt127715318");    //这个就是安装MySQL时设置的密码
+    db.setDatabaseName("/Users/motao/demo1.db");//设置数据库名称
     if (!db.open()) {
         qDebug() << "Database error occurred:" << db.lastError();
         return false;
