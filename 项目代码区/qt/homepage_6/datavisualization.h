@@ -33,6 +33,10 @@ public:
     QBarSet* barset2;
     QBarSet* barset3;
     QBarSet* barset4;
+    QBarSet* barset5;
+    QBarSet* barset6;
+    QBarSet* barset7;
+    QBarSet* barset8;
 
     QLineSeries *series4;  //数据系列
     QChart *chart1;  //图表
