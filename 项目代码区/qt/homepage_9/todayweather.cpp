@@ -28,7 +28,7 @@ todayweather::todayweather(QWidget *parent) :
     // 设置按钮和组合框的样式
     btn->setStyleSheet(
         "QPushButton {"
-        "    background-color: #4CAF50;"
+        "    background-color: #8B8989;"
         "    border: none;"
         "    color: white;"
         "    padding: 10px 20px;"
@@ -41,10 +41,10 @@ todayweather::todayweather(QWidget *parent) :
         "    border-radius: 10px;"
         "}"
         "QPushButton:hover {"
-        "    background-color: #45a049;"
+        "    background-color: #EEE5DE;"
         "}"
         "QPushButton:pressed {"
-        "    background-color: #0d8050;"
+        "    background-color: #CDC5BF;"
         "}"
         );
 
@@ -112,18 +112,14 @@ void todayweather::drawWeather(const QString &weatherType)
     QPixmap weatherpqing(":/weather/weatherp/sunny.png");
     QPixmap weatherpduoyun(":/weather/weatherp/cloudy.png");
 
-    QPixmap fail(":/weather/weatherp/fail.png");
-
     if (weatherType == "阴")
         weatherLabel->setPixmap(weatherpyin);
     else if (weatherType == "晴")
         weatherLabel->setPixmap(weatherpqing);
-    else if(weatherType == "多云")
-        weatherLabel->setPixmap(weatherpduoyun);
     else
-        weatherLabel->setPixmap(fail);
+        weatherLabel->setPixmap(weatherpduoyun);
 
-    weatherLabel->setGeometry(200, 20, 800, 800);  // 设置位置和大小
+    weatherLabel->setGeometry(150, 30, 550, 550);  // 设置位置和大小
     weatherLabel->show();
 }
 
@@ -134,14 +130,6 @@ void todayweather::search()
     int thismonth = todayDate.month();
     int thisday = todayDate.day();
     QString thiscity = cityBox->currentText();
-
-
-    //这边需要完成的部分是调用预测函数预测天气，并用相应的数据设置这些section的样式
-    //我感觉这边函数的布局还得修改一下
-    // section1 = new SectionWidget();
-    // section2 = new SectionWidget();
-    // section3 = new SectionWidget();
-
 
     if (!connectToDatabase()) {
         QMessageBox::critical(this, "数据库连接失败", "今日天气界面：无法连接到数据库，请检查配置。");
@@ -166,7 +154,9 @@ void todayweather::search()
             QString wind_strength = query.value("wind_strength").toString();
             showweather(max_temperature, min_temperature, weather, wind_direction, wind_strength);
         } else {
+            QMessageBox::warning(this, "错误", "无法查询到该城市今日天气");
             qDebug() << "没有查询到数据";
+            clearWeatherDisplay();
         }
     } else {
         qDebug() << "查询执行失败：" << query.lastError().text();
@@ -203,13 +193,44 @@ void todayweather::showweather(QString maxt, QString mint, QString weather, QStr
     windsLabel->setFont(labelFont2);
     windsLabel->setGeometry(150, 750, 300, 50); // 下面的标签较小
 
-
     // 显示所有标签
     weatherLabel1->show();
     maxtLabel->show();
     mintLabel->show();
     winddLabel->show();
     windsLabel->show();
+}
+
+void todayweather::clearWeatherDisplay()
+{
+    if (weatherLabel1) {
+        weatherLabel1->hide();
+        delete weatherLabel1;
+        weatherLabel1 = nullptr;
+    }
+    if (maxtLabel) {
+        maxtLabel->hide();
+        delete maxtLabel;
+        maxtLabel = nullptr;
+    }
+    if (mintLabel) {
+        mintLabel->hide();
+        delete mintLabel;
+        mintLabel = nullptr;
+    }
+    if (winddLabel) {
+        winddLabel->hide();
+        delete winddLabel;
+        winddLabel = nullptr;
+    }
+    if (windsLabel) {
+        windsLabel->hide();
+        delete windsLabel;
+        windsLabel = nullptr;
+    }
+    if (weatherLabel) {
+        weatherLabel->clear();
+    }
 }
 
 todayweather::~todayweather()
