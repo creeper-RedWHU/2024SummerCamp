@@ -191,7 +191,7 @@ def fetchData(ct, startYear, endYear, startMonth, endMonth):
         year = startYear
         for month in range(startMonth, endMonth + 1):
             a = True
-            if whetherhas(ct, year, month) == False:
+            if not whetherhas(ct, year, month):
                 a = get_data(getURL(ct, year, month), ct, year, month)
             if a:
                 print(ct, ' ', year, month, "ok")

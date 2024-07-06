@@ -186,12 +186,18 @@ def deeplearning(x_train, y_train, x_val, y_val, x_tar,x_test,y_test):
     )
     cursor = conn.cursor()
     model = Sequential()
-    model.add(Dense(30, input_dim=1, activation='relu'))
-    model.add(Dense(30, input_dim=1, activation='relu'))
+    model.add(Dense(80, input_dim=1, activation='relu'))
+    model.add(Dense(80, input_dim=1, activation='relu'))
+    model.add(Dense(80, input_dim=1, activation='relu'))
+    model.add(Dense(80, input_dim=1, activation='relu'))
+    model.add(Dense(80, input_dim=1, activation='relu'))
+    model.add(Dense(80, input_dim=1, activation='relu'))
+    model.add(Dense(80, input_dim=1, activation='relu'))
+    model.add(Dense(80, input_dim=1, activation='relu'))
     model.add(Dense(1, activation='linear'))
     model.compile(loss='mean_squared_error', optimizer='adam',
                   metrics=['mean_absolute_error'])
-    history = model.fit(x_train, y_train, epochs=400,
+    history = model.fit(x_train, y_train, epochs=500,
                         batch_size=32, validation_data=(x_val, y_val))
     predictions = model.predict(x_tar)
     loss = history.history['loss']
@@ -240,9 +246,9 @@ def predictFuture12Hours(ct):
     y_new_air = poly_air(x_new)
     y_new_tem = poly_tem(x_new)
 
-    x_train_temp, x_test_temp, y_train_temp, y_test_temp = train_test_split(x_new, y_new_tem, test_size=0.15,
+    x_train_temp, x_test_temp, y_train_temp, y_test_temp = train_test_split(x_new, y_new_tem, test_size=0.20,
                                                                             random_state=42)
-    x_train_temp, x_val_temp, y_train_temp, y_val_temp = train_test_split(x_new, y_new_tem, test_size=0.15,
+    x_train_temp, x_val_temp, y_train_temp, y_val_temp = train_test_split(x_new, y_new_tem, test_size=0.20,
                                                                           random_state=42)
 
     '''
@@ -265,10 +271,47 @@ def predictFuture12Hours(ct):
     plt.show()
 
 
-def predictFuturedays(city,year,month,day):
-    GetData.fetchData(city,year-1,year,month,month)
-
-
+def predictFuturedays(city,year,month,day):#默认有了fetch的数据,需要两年的
+    conn = pymysql.connect(
+        host='localhost',
+        port=3306,
+        user='root',
+        password='zhoujin@MySQL',
+        charset='utf8',
+        database="data"
+    )
+    cursor = conn.cursor()
+    SQL="SELECT * FROM climate where year>=%d and year<%d and city=\'%s\'"%(year-2,year,city)
+    cursor.execute(SQL)
+    lst=cursor.fetchall()
+    cursor.close()
+    conn.close()
+    max_temperaturelst=[]
+    times=[]
+    for i in range(lst.__len__()):
+        max_temperaturelst.append(lst[i][0])
+        times.append(i)
+    times=np.array(times)
+    max_temperaturelst=np.array(max_temperaturelst)
+    poly_tem=make_interp_spline(times,max_temperaturelst)
+    x_new = np.linspace(0, times.__len__()-1, num=3*365)
+    y_new_tem = poly_tem(x_new)
+    x_train_temp, x_test_temp, y_train_temp, y_test_temp = train_test_split(x_new, y_new_tem, test_size=0.15,
+                                                                            random_state=42)
+    x_train_temp, x_val_temp, y_train_temp, y_val_temp = train_test_split(x_new, y_new_tem, test_size=0.15,
+                                                                          random_state=42)
+    x_want = []
+    for i in range(times.__len__(),times.__len__()+2):
+        x_want.append(i)
+    x_want = np.array(x_want)
+    print(x_want)
+    y_want_temp = deeplearning(x_train_temp, y_train_temp, x_val_temp, y_val_temp, x_want, x_test_temp, y_test_temp)
+    print(y_want_temp)
+    plt.scatter(x_train_temp,y_train_temp)
+    plt.scatter(x_test_temp, y_test_temp)
+    plt.scatter(x_want, y_want_temp)
+    plt.legend()
+    plt.show()
 
 '''
 思路：日期*24+小时，唯一的问题在于跨日（或者跨月）
