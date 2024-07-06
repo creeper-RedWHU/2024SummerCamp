@@ -9,6 +9,7 @@ from keras.models import Sequential
 from keras.layers import Dense
 import numpy as np
 from sklearn.model_selection import train_test_split
+
 '''
 接口函数：
 1.平均最高气温(ok)
@@ -174,6 +175,35 @@ def getAverage(city, startYear, startMonth, startday, endYear, endMonth, endday)
     return ans / days
 
 
+def deeplearning(x_train, y_train, x_val, y_val, x_tar,x_test,y_test):
+    conn = pymysql.connect(
+        host='localhost',
+        port=3306,
+        user='root',
+        password='zhoujin@MySQL',
+        charset='utf8',
+        database="data"
+    )
+    cursor = conn.cursor()
+    model = Sequential()
+    model.add(Dense(30, input_dim=1, activation='relu'))
+    model.add(Dense(30, input_dim=1, activation='relu'))
+    model.add(Dense(1, activation='linear'))
+    model.compile(loss='mean_squared_error', optimizer='adam',
+                  metrics=['mean_absolute_error'])
+    history = model.fit(x_train, y_train, epochs=400,
+                        batch_size=32, validation_data=(x_val, y_val))
+    predictions = model.predict(x_tar)
+    loss = history.history['loss']
+    val_loss = history.history['val_loss']
+    # Plot the training and validation loss
+    plt.plot(loss, label='Training loss')
+    plt.plot(val_loss, label='Validation loss')
+    plt.legend()
+    plt.show()
+    return predictions
+
+
 def predictFuture12Hours(ct):
     GetData.GetDataByHours(ct)
     conn = pymysql.connect(
@@ -188,6 +218,8 @@ def predictFuture12Hours(ct):
     SQL = "SELECT * FROM future_hours_weather"
     cursor.execute(SQL)
     lst = cursor.fetchall()
+    cursor.close()
+    conn.close()
     times = []
     air_quality = []
     temperature = []
@@ -201,35 +233,42 @@ def predictFuture12Hours(ct):
     times = np.array(times)
     air_quality = np.array(air_quality)
     temperature = np.array(temperature)
+
     poly_air = make_interp_spline(times, air_quality)  # 样条插值扩充样本
     poly_tem = make_interp_spline(times, temperature)
-    x_new = np.linspace(0, 23, num=150)
+    x_new = np.linspace(0, 23, num=50)
     y_new_air = poly_air(x_new)
     y_new_tem = poly_tem(x_new)
 
-    x_train_temp,x_test_temp,y_train_temp,y_test_temp=train_test_split(x_new,y_new_tem,test_size=0.15,random_state=42)
-    x_train_temp, x_val_temp, y_train_temp, y_val_temp = train_test_split(x_new, y_new_tem, test_size=0.15,
+    x_train_temp, x_test_temp, y_train_temp, y_test_temp = train_test_split(x_new, y_new_tem, test_size=0.15,
                                                                             random_state=42)
+    x_train_temp, x_val_temp, y_train_temp, y_val_temp = train_test_split(x_new, y_new_tem, test_size=0.15,
+                                                                          random_state=42)
 
-    model=Sequential()
-    model.add(Dense(50, input_dim=1, activation='relu'))
-    model.add(Dense(1, activation='linear'))
-    model.compile(loss='mean_squared_error', optimizer='adam',
-                  metrics=['mean_absolute_error'])
-    history = model.fit(x_train_temp, y_train_temp, epochs=500,
-                        batch_size=30, validation_data=(x_val_temp, y_val_temp))
-    predictions = model.predict(x_test_temp)
+    '''
     loss = history.history['loss']
     val_loss = history.history['val_loss']
     mae = history.history['mean_absolute_error']
     val_mae = history.history['val_mean_absolute_error']
     # Plot the training and validation loss
-    plt.plot(loss, label='Training loss')
-    plt.plot(val_loss, label='Validation loss')
+    #plt.plot(loss, label='Training loss')
+    #plt.plot(val_loss, label='Validation loss')
+    '''
+    x_want = []
+    for i in range(24, 48):
+        x_want.append(i)
+    x_want = np.array(x_want)
+    y_want_temp = deeplearning(x_train_temp, y_train_temp, x_val_temp, y_val_temp, x_want,x_test_temp,y_test_temp)
+    print(y_want_temp)
+    plt.scatter(x_want,y_want_temp)
     plt.legend()
     plt.show()
-    cursor.close()
-    conn.close()
+
+
+def predictFuturedays(city,year,month,day):
+    GetData.fetchData(city,year-1,year,month,month)
+
+
 
 '''
 思路：日期*24+小时，唯一的问题在于跨日（或者跨月）
@@ -239,4 +278,4 @@ def predictFuture12Hours(ct):
     plt.show()
 '''
 if __name__ == '__main__':
-    predictFuture12Hours("武汉")
+    predictFuturedays("武汉",2024,1,12)

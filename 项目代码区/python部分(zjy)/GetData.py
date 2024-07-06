@@ -280,5 +280,4 @@ if __name__ == '__main__':
     emonth=8
     fetchData(city,syear,eyear,smonth,emonth)
     '''
-    ''''''
     GetDataByHours("武汉")
