@@ -186,20 +186,22 @@ def deeplearning(x_train, y_train, x_val, y_val, x_tar,x_test,y_test):
     )
     cursor = conn.cursor()
     model = Sequential()
-    model.add(Dense(80, input_dim=1, activation='relu'))
-    model.add(Dense(80, input_dim=1, activation='relu'))
-    model.add(Dense(80, input_dim=1, activation='relu'))
-    model.add(Dense(80, input_dim=1, activation='relu'))
-    model.add(Dense(80, input_dim=1, activation='relu'))
-    model.add(Dense(80, input_dim=1, activation='relu'))
-    model.add(Dense(80, input_dim=1, activation='relu'))
-    model.add(Dense(80, input_dim=1, activation='relu'))
+    model.add(Dense(50, input_dim=1, activation='relu'))
+    model.add(Dense(50, input_dim=1, activation='relu'))
+    model.add(Dense(50, input_dim=1, activation='relu'))
+    model.add(Dense(50, input_dim=1, activation='relu'))
+    model.add(Dense(30, input_dim=1, activation='relu'))
+    model.add(Dense(30, input_dim=1, activation='relu'))
+    model.add(Dense(30, input_dim=1, activation='relu'))
+    model.add(Dense(30, input_dim=1, activation='relu'))
+    model.add(Dense(30, input_dim=1, activation='relu'))
+    model.add(Dense(30, input_dim=1, activation='relu'))
     model.add(Dense(1, activation='linear'))
     model.compile(loss='mean_squared_error', optimizer='adam',
                   metrics=['mean_absolute_error'])
     tensorboard_callback = keras.callbacks.TensorBoard(log_dir="./logs")
     history = model.fit(x_train, y_train, epochs=500,
-                        batch_size=32, validation_data=(x_val, y_val),callbacks=[tensorboard_callback])
+                        batch_size=64, validation_data=(x_val, y_val),callbacks=[tensorboard_callback])
     predictions = model.predict(x_tar)
     loss = history.history['loss']
     val_loss = history.history['val_loss']
@@ -282,8 +284,9 @@ def predictFuturedays(city,year,month,day):#默认有了fetch的数据,需要两
         database="data"
     )
     cursor = conn.cursor()
-    SQL="SELECT * FROM climate where year>=%d and year<%d and city=\'%s\'"%(year-2,year,city)
+    SQL="SELECT * FROM climate where year>=%d and year<%d and city=\'%s\' order by year asc,month asc"%(year-2,year,city)
     cursor.execute(SQL)
+
     lst=cursor.fetchall()
     cursor.close()
     conn.close()
