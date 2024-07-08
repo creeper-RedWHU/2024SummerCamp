@@ -50,7 +50,7 @@ datavisualization::datavisualization(QWidget *parent)
     QPushButton *drawButton = new QPushButton("绘制", this);
     controlLayout->addWidget(drawButton);
     connect(drawButton, &QPushButton::clicked, this, &datavisualization::onDrawButtonClicked);  // Modify this line
-    // connect(drawButton, &QPushButton::clicked, this, );
+
 
     setStyleSheet(R"(
         QWidget {
@@ -94,10 +94,9 @@ datavisualization::datavisualization(QWidget *parent)
 
     series1 = new QLineSeries;
     series4 = new QLineSeries;
-
     series2 = new QPieSeries;
-
     series3 = new QBarSeries;
+
     barset1 = new QBarSet("东风");
     barset2 = new QBarSet("西风");
     barset3 = new QBarSet("南风");
@@ -161,11 +160,11 @@ datavisualization::datavisualization(QWidget *parent)
     // 布局设置
     QHBoxLayout *hlayout1 = new QHBoxLayout;
     hlayout1->addWidget(chartview1);
-    hlayout1->addWidget(chartview2);
+    hlayout1->addWidget(chartview4);
 
     QHBoxLayout *hlayout2 = new QHBoxLayout;
+    hlayout2->addWidget(chartview2);
     hlayout2->addWidget(chartview3);
-    hlayout2->addWidget(chartview4);
 
     QVBoxLayout *vlayout = new QVBoxLayout;
     vlayout->addLayout(controlLayout);
