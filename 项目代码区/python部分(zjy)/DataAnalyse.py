@@ -9,7 +9,7 @@ from keras.models import Sequential
 from keras.layers import Dense
 import numpy as np
 from sklearn.model_selection import train_test_split
-
+import keras
 '''
 接口函数：
 1.平均最高气温(ok)
@@ -197,8 +197,9 @@ def deeplearning(x_train, y_train, x_val, y_val, x_tar,x_test,y_test):
     model.add(Dense(1, activation='linear'))
     model.compile(loss='mean_squared_error', optimizer='adam',
                   metrics=['mean_absolute_error'])
+    tensorboard_callback = keras.callbacks.TensorBoard(log_dir="./logs")
     history = model.fit(x_train, y_train, epochs=500,
-                        batch_size=32, validation_data=(x_val, y_val))
+                        batch_size=32, validation_data=(x_val, y_val),callbacks=[tensorboard_callback])
     predictions = model.predict(x_tar)
     loss = history.history['loss']
     val_loss = history.history['val_loss']
