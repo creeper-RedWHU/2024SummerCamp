@@ -93,16 +93,9 @@ datavisualization::datavisualization(QWidget *parent)
 
 
     series1 = new QLineSeries;
-    series1->append(0, 6);
-    series1->append(2, 4);
-    series1->append(3, 8);
-    series1->append(7, 4);
-    series1->append(10, 5);
+    series4 = new QLineSeries;
 
     series2 = new QPieSeries;
-    series2->append("阴天", 15);
-    series2->append("雨天", 7);
-    series2->append("晴天", 7);
 
     series3 = new QBarSeries;
     barset1 = new QBarSet("东风");
@@ -115,32 +108,7 @@ datavisualization::datavisualization(QWidget *parent)
     barset8 = new QBarSet("西北风");
     barset9 = new QBarSet("微风");
 
-    *barset1 << 5;
-    *barset2 << 14;
-    *barset3 << 9;
-    *barset4 << 2;
-    *barset5 << 5;
-    *barset6 << 14;
-    *barset7 << 9;
-    *barset8 << 2;
-    *barset9 << 2;
 
-    series3->append(barset1);
-    series3->append(barset2);
-    series3->append(barset3);
-    series3->append(barset4);
-    series3->append(barset5);
-    series3->append(barset6);
-    series3->append(barset7);
-    series3->append(barset8);
-    series3->append(barset9);
-
-    series4 = new QLineSeries;
-    series4->append(2, 5);
-    series4->append(3, 7);
-    series4->append(6, 7);
-    series4->append(7, 3);
-    series4->append(10, 4);
 
 
 
@@ -150,6 +118,12 @@ datavisualization::datavisualization(QWidget *parent)
     chart1->addSeries(series1);
     chart1->createDefaultAxes();
     chart1->setTitle("最高气温折线图");
+
+    chart4 = new QChart();
+    chart4->legend()->hide();
+    chart4->addSeries(series4);
+    chart4->createDefaultAxes();
+    chart4->setTitle("最低气温折线图");
 
     chart2 = new QChart();
     chart2->legend()->hide();
@@ -163,15 +137,13 @@ datavisualization::datavisualization(QWidget *parent)
     chart3->createDefaultAxes();
     chart3->setTitle("风向柱状图");
 
-    chart4 = new QChart();
-    chart4->legend()->hide();
-    chart4->addSeries(series4);
-    chart4->createDefaultAxes();
-    chart4->setTitle("最低气温折线图");
 
     // 创建图表视图并设置渲染提示
     chartview1 = new QChartView(chart1);
     chartview1->setRenderHint(QPainter::Antialiasing);
+
+    chartview4 = new QChartView(chart4);
+    chartview4->setRenderHint(QPainter::Antialiasing);
 
     chartview2 = new QChartView(chart2);
     chartview2->setRenderHint(QPainter::Antialiasing);
@@ -179,14 +151,12 @@ datavisualization::datavisualization(QWidget *parent)
     chartview3 = new QChartView(chart3);
     chartview3->setRenderHint(QPainter::Antialiasing);
 
-    chartview4 = new QChartView(chart4);
-    chartview4->setRenderHint(QPainter::Antialiasing);
-
     // 连接鼠标悬停事件信号与槽函数
     connect(series1, &QLineSeries::hovered, this, &datavisualization::updateTooltip1);
+    connect(series4, &QLineSeries::hovered, this, &datavisualization::updateTooltip1);
     connect(series2, &QPieSeries::hovered, this, &datavisualization::updateTooltip2);
     connect(series3, &QBarSeries::hovered, this, &datavisualization::updateTooltip3);
-    connect(series4, &QLineSeries::hovered, this, &datavisualization::updateTooltip1);
+
 
     // 布局设置
     QHBoxLayout *hlayout1 = new QHBoxLayout;
@@ -201,7 +171,7 @@ datavisualization::datavisualization(QWidget *parent)
     vlayout->addLayout(controlLayout);
     vlayout->addLayout(hlayout1);
     vlayout->addLayout(hlayout2);
-    // controlLayout
+
 
     this->setLayout(nullptr);
     this->setLayout(vlayout);
@@ -263,15 +233,11 @@ void datavisualization::mydraw()
     int Qstartday = startDayComboBox->currentText().toInt();
     int Qendday = endDayComboBox->currentText().toInt();
 
-    qDebug() << "Selected City:" << Qcity;
-    qDebug() << "Selected Year:" << Qyear;
-    qDebug() << "Selected Month:" << Qmonth;
-    qDebug() << "Selected Start Day:" << Qstartday;
-    qDebug() << "Selected End Day:" << Qendday;
+
 
     // 查询数据库获取最高气温数据
     QSqlQuery query;  // 使用现有的数据库连接
-    query.prepare("SELECT day, max_temperature,min_temperature FROM climate WHERE city = :city AND year = :year AND month = :month AND day <= :eday AND day >= :sday");
+    query.prepare("SELECT day,max_temperature FROM climate WHERE city = :city AND year = :year AND month = :month AND day <= :eday AND day >= :sday");
     query.bindValue(":city", Qcity);
     query.bindValue(":year", Qyear);
     query.bindValue(":month", Qmonth);
@@ -282,54 +248,53 @@ void datavisualization::mydraw()
         qDebug() << "Query execution failed:" << query.lastError().text();
     }
 
+
     // 清空原有数据
     series1->clear();
-    series4->clear();
-    qDebug() << "Cleared existing series data.";
 
     // 填充新数据
     while (query.next()) {
-        int x_value = query.value(0).toInt();
-        int y1_value = query.value(1).toInt();
-        int y2_value = query.value(2).toInt();
-        qDebug() << "Adding point:" << x_value << "," << y1_value<<","<<y2_value;
-        series1->append(x_value, y1_value);
-        series4->append(x_value, y2_value);
+        int day = query.value("day").toInt(); // 获取天数
+        int y1_value = query.value("max_temperature").toInt();
+        series1->append(day, y1_value); // 使用天数作为 x 轴坐标
     }
 
-    // 更新图表
+    // 更新图表1
     chart1->removeSeries(series1);
     chart1->addSeries(series1);
 
-    qDebug() << "Chart1 series removed and added.";
-
-    // 更新图表标题
+    // 更新图表1的标题
     chart1->setTitle("最高气温折线图");
+    qDebug() << "Updated chart1 title to '最高气温折线图'.";
 
-    // 刷新图表显示
+    chart1->removeAxis(chart1->axisX());
+    chart1->removeAxis(chart1->axisY());
+
+    // 修改图表1的 x 轴信息
+    QValueAxis *xAxis = new QValueAxis;
+    xAxis->setLabelFormat("%d"); // 设置轴标签格式为整数（天数）
+    xAxis->setTitleText("日期（天）"); // 设置轴标题
+    chart1->addAxis(xAxis, Qt::AlignBottom); // 将 x 轴添加到图表的底部
+    series1->attachAxis(xAxis); // 将 series1 与 x 轴绑定
+    qDebug() << "Updated chart1 x-axis format and title.";
+
+    // 修改图表1的 y 轴信息
+    QValueAxis *yAxis = new QValueAxis();
+    yAxis->setLabelsVisible(true); // 设置轴标签可见
+    yAxis->setTitleText("最高气温/°C"); // 设置轴标题
+    chart1->addAxis(yAxis, Qt::AlignLeft); // 将 y 轴添加到图表的左侧
+    series1->attachAxis(yAxis); // 将 series1 与 y 轴绑定
+    qDebug() << "Updated chart1 y-axis format and title.";
+
+    // 刷新图表1显示
     chartview1->update();  // 或者 chartview1->repaint();
-    qDebug() << "Chart1 view updated.";
-
-    chart4->removeSeries(series4);
-    chart4->addSeries(series4);
-
-    qDebug() << "Chart4 series removed and added.";
-
-    // 更新图表标题
-    chart4->setTitle("最低气温折线图");
-
-    // 刷新图表显示
-    chartview4->update();  // 或者 chartview4->repaint();
-    qDebug() << "Chart4 view updated.";
+    qDebug() << "Updated chartview1.";
 
 
 
 
 
-    // 输出即将执行的查询信息
-    qDebug() << "Executing SQL query:";
-    qDebug().noquote() << "SELECT weather FROM climate WHERE city = " << Qcity << " AND year = " << Qyear
-                       << " AND month = " << Qmonth << " AND day <= " << Qendday << " AND day >= " << Qstartday;
+
 
     QSqlQuery query1(db);
     query1.prepare("SELECT weather FROM climate WHERE city = :city AND year = :year AND month = :month AND day <= :eday AND day >= :sday");
@@ -370,6 +335,47 @@ void datavisualization::mydraw()
         weatherCounts.insert("雾~阴", 0);
         weatherCounts.insert("多云~阴", 0);
         weatherCounts.insert("阴~晴", 0);
+        weatherCounts.insert("中雨~小雨", 0);
+        weatherCounts.insert("多云~雨", 0);
+        weatherCounts.insert("小雨~雨", 0);
+        weatherCounts.insert("中雨~雨", 0);
+        weatherCounts.insert("小雨~雨", 0);
+        weatherCounts.insert("阴~小雨", 0);
+        weatherCounts.insert("大雨~多云", 0);
+        weatherCounts.insert("小雨~晴", 0);
+        weatherCounts.insert("中雨~多云", 0);
+        weatherCounts.insert("扬沙~多云", 0);
+        weatherCounts.insert("晴~小雨", 0);
+        weatherCounts.insert("晴~阴", 0);
+        weatherCounts.insert("中雨~大雨", 0);
+        weatherCounts.insert("小雨~多云", 0);
+        weatherCounts.insert("雾~小雨", 0);
+        weatherCounts.insert("阴~小雨", 0);
+        weatherCounts.insert("小雨~晴", 0);
+        weatherCounts.insert("雾~中雨", 0);
+        weatherCounts.insert("暴雨~晴", 0);
+        weatherCounts.insert("雾~大雨", 0);
+
+
+        weatherCounts.insert("多云转大雨", 0);
+        weatherCounts.insert("阴转多云", 0);
+        weatherCounts.insert("大雨转小雨", 0);
+        weatherCounts.insert("多云转中雨", 0);
+        weatherCounts.insert("阴转多云", 0);
+        weatherCounts.insert("阴转中雨", 0);
+        weatherCounts.insert("雾转阴", 0);
+        weatherCounts.insert("多云转阴", 0);
+        weatherCounts.insert("阴转晴", 0);
+        weatherCounts.insert("中雨转小雨", 0);
+        weatherCounts.insert("雾转多云", 0);
+        weatherCounts.insert("雾转晴", 0);
+        weatherCounts.insert("晴转多云", 0);
+        weatherCounts.insert("多云转晴", 0);
+        weatherCounts.insert("小雨转阴", 0);
+        weatherCounts.insert("多云转雨", 0);
+        weatherCounts.insert("小雨转雨", 0);
+        weatherCounts.insert("中雨转雨", 0);
+        weatherCounts.insert("小雨转雨", 0);
 
         while (query1.next()) {
             QString weather = query1.value(0).toString();
@@ -502,6 +508,66 @@ QBarSeries *series3 = new QBarSeries();
     qDebug() << "Chart updated with wind direction data.";
 
     chartview2->update();
+
+
+
+
+
+    // 查询数据库获取最高气温数据
+    QSqlQuery query3;  // 使用现有的数据库连接
+    query3.prepare("SELECT day,min_temperature FROM climate WHERE city = :city AND year = :year AND month = :month AND day <= :eday AND day >= :sday");
+    query3.bindValue(":city", Qcity);
+    query3.bindValue(":year", Qyear);
+    query3.bindValue(":month", Qmonth);
+    query3.bindValue(":sday", Qstartday);
+    query3.bindValue(":eday", Qendday);
+
+    if (!query3.exec()) {
+        qDebug() << "Query execution failed:" << query.lastError().text();
+    }
+
+
+    // 清空原有数据
+    series4->clear();
+
+    // 填充新数据
+    while (query3.next()) {
+        int day = query3.value("day").toInt(); // 获取天数
+        int y1_value = query3.value("min_temperature").toInt();
+        series4->append(day, y1_value); // 使用天数作为 x 轴坐标
+    }
+
+    // 更新图表1
+    chart4->removeSeries(series4);
+    chart4->addSeries(series4);
+
+    // 更新图表1的标题
+    chart4->setTitle("最低气温折线图");
+
+
+    chart4->removeAxis(chart4->axisX());
+    chart4->removeAxis(chart4->axisY());
+
+    // 修改图表1的 x 轴信息
+    QValueAxis *xAxis4 = new QValueAxis;
+    xAxis4->setLabelFormat("%d"); // 设置轴标签格式为整数（天数）
+    xAxis4->setTitleText("日期（天）"); // 设置轴标题
+    chart4->addAxis(xAxis4, Qt::AlignBottom); // 将 x 轴添加到图表的底部
+    series4->attachAxis(xAxis4); // 将 series1 与 x 轴绑定
+
+    // 修改图表1的 y 轴信息
+    QValueAxis *yAxis4 = new QValueAxis();
+    yAxis4->setLabelsVisible(true); // 设置轴标签可见
+    yAxis4->setTitleText("最高气温/°C"); // 设置轴标题
+    chart4->addAxis(yAxis4, Qt::AlignLeft); // 将 y 轴添加到图表的左侧
+    series4->attachAxis(yAxis4); // 将 series1 与 y 轴绑定
+
+    // 刷新图表1显示
+    chartview4->update();  // 或者 chartview1->repaint();
+    qDebug() << "Updated chartview1.";
+
+
+
 
 
 }
