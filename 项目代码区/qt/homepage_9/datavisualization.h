@@ -17,6 +17,14 @@ namespace Ui {
 class datavisualization;
 }
 
+QLineSeries *series1;  //数据系列
+QPieSeries *series2;  //数据系列
+QBarSeries *series3;  //数据系列
+QLineSeries *series4;  //数据系列
+QChart *chart1;  //图表
+QChart *chart2;  //图表
+QChart *chart3;  //图表
+QChart *chart4;  //图表
 
 class datavisualization : public QWidget
 {
@@ -26,9 +34,17 @@ public:
     explicit datavisualization(QWidget *parent = nullptr);
     ~datavisualization();
 
+
+
+
     QLineSeries *series1;  //数据系列
     QPieSeries *series2;  //数据系列
     QBarSeries *series3;  //数据系列
+    QLineSeries *series4;  //数据系列
+    QChart *chart1;  //图表
+    QChart *chart2;  //图表
+    QChart *chart3;  //图表
+    QChart *chart4;  //图表
     QBarSet* barset1;  //柱状图的"柱"
     QBarSet* barset2;
     QBarSet* barset3;
@@ -37,13 +53,11 @@ public:
     QBarSet* barset6;
     QBarSet* barset7;
     QBarSet* barset8;
+    QBarSet* barset9;
 
 
-    QLineSeries *series4;  //数据系列
-    QChart *chart1;  //图表
-    QChart *chart2;  //图表
-    QChart *chart3;  //图表
-    QChart *chart4;  //图表
+
+
     QChartView *chartview1;  //图表视图
     QChartView *chartview2;  //图表视图
     QChartView *chartview3;  //图表视图

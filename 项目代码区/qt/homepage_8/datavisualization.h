@@ -37,6 +37,7 @@ public:
     QBarSet* barset6;
     QBarSet* barset7;
     QBarSet* barset8;
+    QBarSet* barset9;
 
 
     QLineSeries *series4;  //数据系列
