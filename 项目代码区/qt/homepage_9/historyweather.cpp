@@ -27,26 +27,11 @@ historyweather::historyweather(QWidget *parent)
 
     cityBox->addItem("武汉");
     cityBox->addItem("北京");
-    cityBox->addItem("南京");
-    cityBox->addItem("长沙");
-    cityBox->addItem("杭州");
     cityBox->addItem("上海");
-
 
     yearBox->addItem("2024");
     yearBox->addItem("2023");
     yearBox->addItem("2022");
-    yearBox->addItem("2021");
-    yearBox->addItem("2020");
-    yearBox->addItem("2019");
-    yearBox->addItem("2018");
-    yearBox->addItem("2017");
-    yearBox->addItem("2016");
-    yearBox->addItem("2015");
-    yearBox->addItem("2014");
-    yearBox->addItem("2013");
-    yearBox->addItem("2012");
-    yearBox->addItem("2011");
 
     monthBox->addItem("一月");
     monthBox->addItem("二月");
@@ -192,20 +177,19 @@ historyweather::historyweather(QWidget *parent)
 
 void historyweather::initDB()
 {
-    db = QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("localhost");  // 根据实际情况设置
-    db.setDatabaseName("data");  // 替换为你的数据库名
-    db.setUserName("root");  // 替换为你的数据库用户名
-    db.setPassword("123456");  // 替换为你的数据库密码
+    // db = QSqlDatabase::addDatabase("QMYSQL");
+    // db.setHostName("localhost");  // 根据实际情况设置
+    // db.setDatabaseName("data");  // 替换为你的数据库名
+    // db.setUserName("root");  // 替换为你的数据库用户名
+    // db.setPassword("123456");  // 替换为你的数据库密码
 
-    // QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");// 建立和QSQLITE数据库的连接
-    // db.setHostName("127.0.0.1");  //连接本地主机
-    // db.setPort(3306);
-    // db.setUserName("root");
-    // //设置数据库的密码
-    // db.setPassword("mt127715318");    //这个就是安装MySQL时设置的密码
-    // db.setDatabaseName("/Users/motao/demo1.db");//设置数据库名称
-
+    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");// 建立和QSQLITE数据库的连接
+    db.setHostName("127.0.0.1");  //连接本地主机
+    db.setPort(3306);
+    db.setUserName("root");
+    //设置数据库的密码
+    db.setPassword("mt127715318");    //这个就是安装MySQL时设置的密码
+    db.setDatabaseName("/Users/motao/demo1.db");//设置数据库名称
     if (!db.open()) {
         qDebug() << "历史天气无法连接到数据库：" << db.lastError().text();
     } else {
@@ -215,10 +199,6 @@ void historyweather::initDB()
 
 void historyweather::showweather()
 {
-    link_py *linkpy = new link_py(this);  //创建link_py对象
-    // 调用 Python 脚本获取最新数据
-    linkpy->fetchData(cityBox->currentText(), yearBox->currentText().toInt(), monthBox->currentIndex() + 1,
-                      yearBox->currentText().toInt(), monthBox->currentIndex() + 1);
     initDB();
 
     // 清空现有数据
