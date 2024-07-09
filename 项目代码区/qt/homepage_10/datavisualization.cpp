@@ -419,7 +419,11 @@ void datavisualization::mydraw()
                     // Handle unknown weather type color
                     slice->setBrush(Qt::black); // or any default color
                 }
+                // Set label to weather type
+                slice->setLabel(weather);
+                slice->setLabelVisible(true); // Make label visible
             }
+
         }
 
         chart2->setTitle("天气饼状图");
