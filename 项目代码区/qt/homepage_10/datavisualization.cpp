@@ -96,18 +96,7 @@ datavisualization::datavisualization(QWidget *parent)
     series4 = new QLineSeries;
     series2 = new QPieSeries;
     series3 = new QBarSeries;
-
-    barset1 = new QBarSet("东风");
-    barset2 = new QBarSet("西风");
-    barset3 = new QBarSet("南风");
-    barset4 = new QBarSet("北风");
-    barset5 = new QBarSet("东南风");
-    barset6 = new QBarSet("东北风");
-    barset7 = new QBarSet("西南风");
-    barset8 = new QBarSet("西北风");
-    barset9 = new QBarSet("微风");
-
-
+    scatterSeries = new QScatterSeries();
 
 
 
@@ -151,10 +140,12 @@ datavisualization::datavisualization(QWidget *parent)
     chartview3->setRenderHint(QPainter::Antialiasing);
 
     // 连接鼠标悬停事件信号与槽函数
-    connect(series1, &QLineSeries::hovered, this, &datavisualization::updateTooltip1);
+
     connect(series4, &QLineSeries::hovered, this, &datavisualization::updateTooltip1);
     connect(series2, &QPieSeries::hovered, this, &datavisualization::updateTooltip2);
     connect(series3, &QBarSeries::hovered, this, &datavisualization::updateTooltip3);
+    connect(scatterSeries, &QScatterSeries::hovered, this, &datavisualization::updateTooltip4);
+
 
 
     // 布局设置
@@ -187,19 +178,19 @@ datavisualization::~datavisualization()
 //连接数据库
 bool datavisualization::connectToDatabase()
 {
-    db = QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("60.205.232.122");
-    db.setDatabaseName("data");
-    db.setUserName("root");
-    db.setPassword("123456");
-
-    // QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");// 建立和QSQLITE数据库的连接
-    // db.setHostName("127.0.0.1");  //连接本地主机
-    // db.setPort(3306);
+    // db = QSqlDatabase::addDatabase("QMYSQL");
+    // db.setHostName("60.205.232.122");
+    // db.setDatabaseName("data");
     // db.setUserName("root");
-    // //设置数据库的密码
-    // db.setPassword("mt127715318");    //这个就是安装MySQL时设置的密码
-    // db.setDatabaseName("/Users/motao/demo1.db");//设置数据库名称
+    // db.setPassword("123456");
+
+    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");// 建立和QSQLITE数据库的连接
+    db.setHostName("127.0.0.1");  //连接本地主机
+    db.setPort(3306);
+    db.setUserName("root");
+    //设置数据库的密码
+    db.setPassword("mt127715318");    //这个就是安装MySQL时设置的密码
+    db.setDatabaseName("/Users/motao/demo1.db");//设置数据库名称
 
     if (!db.open()) {
         qDebug() << "Database error occurred:" << db.lastError();
@@ -251,38 +242,80 @@ void datavisualization::mydraw()
     // 清空原有数据
     series1->clear();
 
-    // 填充新数据
+
+
+    // 清空原有散点数据
+    foreach (QAbstractSeries *s, chart1->series()) {
+        chart1->removeSeries(s);
+    }
+
+    // 填充新数据，同时添加散点数据
+
+    scatterSeries->setMarkerShape(QScatterSeries::MarkerShapeCircle); // 设置散点形状为圆形
+    scatterSeries->setMarkerSize(4.5); // 设置散点大小为 4.5 像素
+    QValueAxis *xAxis = new QValueAxis;
+    QValueAxis *yAxis = new QValueAxis();
+
+
+    int minY = 100;  // 初始化为一个非常大的数，作为最小值
+    int maxY = -100;  // 初始化为一个非常小的数，作为最大值
+    int minX = 100;  // 初始化为一个非常大的数，作为最小值
+    int maxX = -100;  // 初始化为一个非常小的数，作为最大值
+
     while (query.next()) {
         int day = query.value("day").toInt(); // 获取天数
         int y1_value = query.value("max_temperature").toInt();
-        series1->append(day, y1_value); // 使用天数作为 x 轴坐标
-    }
+        series1->append(day, y1_value); // 添加折线图数据
+        scatterSeries->append(day, y1_value); // 添加散点数据
 
-    // 更新图表1
-    chart1->removeSeries(series1);
+        // 更新最小和最大温度值
+        if (y1_value < minY) {
+            minY = y1_value;
+        }
+        if (y1_value > maxY) {
+            maxY = y1_value;
+        }
+
+        // 更新最小和最大天数
+        if (day < minX) {
+            minX = day;
+        }
+        if (day > maxX) {
+            maxX = day;
+        }
+    }
+    xAxis->setRange(minX-1, maxX+1);
+    yAxis->setRange(minY-1, maxY+1);
+    // 将折线图系列添加到图表中
     chart1->addSeries(series1);
 
+    // 将散点系列添加到图表中，并绑定轴
+    chart1->addSeries(scatterSeries);
+    scatterSeries->attachAxis(xAxis);
+    scatterSeries->attachAxis(yAxis);
+
     // 更新图表1的标题
-    chart1->setTitle("最高气温折线图");
-    qDebug() << "Updated chart1 title to '最高气温折线图'.";
+    chart1->setTitle("最高气温折线图（含散点）");
+    qDebug() << "Updated chart1 title to '最高气温折线图（含散点）'.";
 
     chart1->removeAxis(chart1->axisX());
     chart1->removeAxis(chart1->axisY());
 
     // 修改图表1的 x 轴信息
-    QValueAxis *xAxis = new QValueAxis;
     xAxis->setLabelFormat("%d"); // 设置轴标签格式为整数（天数）
     xAxis->setTitleText("日期（天）"); // 设置轴标题
     chart1->addAxis(xAxis, Qt::AlignBottom); // 将 x 轴添加到图表的底部
     series1->attachAxis(xAxis); // 将 series1 与 x 轴绑定
+    scatterSeries->attachAxis(xAxis); // 将散点系列与 x 轴绑定
     qDebug() << "Updated chart1 x-axis format and title.";
 
     // 修改图表1的 y 轴信息
-    QValueAxis *yAxis = new QValueAxis();
+
     yAxis->setLabelsVisible(true); // 设置轴标签可见
     yAxis->setTitleText("最高气温/°C"); // 设置轴标题
     chart1->addAxis(yAxis, Qt::AlignLeft); // 将 y 轴添加到图表的左侧
     series1->attachAxis(yAxis); // 将 series1 与 y 轴绑定
+    scatterSeries->attachAxis(yAxis); // 将散点系列与 y 轴绑定
     qDebug() << "Updated chart1 y-axis format and title.";
 
     // 刷新图表1显示
@@ -376,6 +409,16 @@ void datavisualization::mydraw()
         weatherCounts.insert("中雨转雨", 0);
         weatherCounts.insert("小雨转雨", 0);
 
+        QMap<QString, QColor> weatherColors;
+        for (auto it = weatherCounts.begin(); it != weatherCounts.end(); ++it) {
+            int red = QRandomGenerator::global()->bounded(256);    // 随机生成 0 到 255 之间的整数
+            int green = QRandomGenerator::global()->bounded(256);
+            int blue = QRandomGenerator::global()->bounded(256);
+            QColor randomColor(red, green, blue);
+            weatherColors.insert(it.key(), randomColor);
+        }
+
+
         while (query1.next()) {
             QString weather = query1.value(0).toString();
             if (weatherCounts.contains(weather)) {
@@ -385,14 +428,30 @@ void datavisualization::mydraw()
             }
         }
 
-        qDebug() << "Weather counts:";
-        for (auto it = weatherCounts.constBegin(); it != weatherCounts.constEnd(); ++it) {
-            qDebug() << it.key() << ":" << it.value();
-        }
+        // qDebug() << "Weather counts:";
+        // for (auto it = weatherCounts.constBegin(); it != weatherCounts.constEnd(); ++it) {
+        //     qDebug() << it.key() << ":" << it.value();
+        // }
 
         series2->clear();
         for (auto it = weatherCounts.constBegin(); it != weatherCounts.constEnd(); ++it) {
-            series2->append(it.key(), it.value());
+            QString weather = it.key();
+            int count = it.value();
+
+            if (count > 0) {
+                QPieSlice *slice = series2->append(weather, count);
+
+                if (weatherColors.contains(weather)) {
+                    slice->setBrush(weatherColors[weather]);
+                } else {
+                    // Handle unknown weather type color
+                    slice->setBrush(Qt::black); // or any default color
+                }
+                // Set label to weather type
+                slice->setLabel(weather);
+                slice->setLabelVisible(true); // Make label visible
+            }
+
         }
 
         chart2->setTitle("天气饼状图");
@@ -426,7 +485,17 @@ void datavisualization::mydraw()
     QBarSet *barset6 = new QBarSet("东北风");
     QBarSet *barset7 = new QBarSet("西南风");
     QBarSet *barset8 = new QBarSet("西北风");
-    QBarSet *barset9 = new QBarSet("微风");
+    QBarSet *barset9 = new QBarSet("无持续风向");
+
+    barset1->setColor(Qt::red);
+    barset2->setColor(Qt::blue);
+    barset3->setColor(Qt::green);
+    barset4->setColor(Qt::yellow);
+    barset5->setColor(Qt::cyan);
+    barset6->setColor(Qt::magenta);
+    barset7->setColor(Qt::gray);
+    barset8->setColor(Qt::darkRed);
+    barset9->setColor(Qt::darkBlue);
 
     // 初始化八个风向的风力计数器
     int wind1 = 0;  // 东风
@@ -461,7 +530,10 @@ void datavisualization::mydraw()
             wind8++;
         } else if (wind_direction == "微风") {
             wind9++;
+        }else if (wind_direction == "无持续风向") {
+            wind9++;
         }
+
 
 
     }
@@ -571,13 +643,14 @@ void datavisualization::mydraw()
 
 }
 
-
 //处理折现图的悬停信号
 void datavisualization::updateTooltip1(QPointF point, bool state)
 {
     if (state) {
         // 格式化提示信息
-        QString tooltip = QString("X: %1, Y: %2").arg(point.x()).arg(point.y());
+        QString tooltip = QString("日期: %1, 气温: %2°C")
+                              .arg(QString::number(point.x(), 'f', 1)) // x 轴数据保留一位小数
+                              .arg(QString::number(point.y(), 'f', 1)); // y 轴数据保留一位小数
         // 设置提示信息
         QToolTip::showText(QCursor::pos(), tooltip);
     } else {
@@ -585,18 +658,29 @@ void datavisualization::updateTooltip1(QPointF point, bool state)
         QToolTip::hideText();
     }
 }
-//处理饼状图的悬停信号
 void datavisualization::updateTooltip2(QPieSlice *slice, bool state)
 {
     if (state && slice) {
         QString tooltip = QString("饼状图 - %1: %2").arg(slice->label()).arg(slice->value());
-        // 显示提示信息
         QToolTip::showText(QCursor::pos(), tooltip);
+
+        // 放大当前悬停的扇形
+        slice->setExploded(true);
+        slice->setLabelVisible(true); // 可选：显示扇形的标签
+
+        // 如果有需要，您还可以修改扇形的颜色或其他属性
+        // slice->setBrush(...);
+
     } else {
-        // 如果鼠标不在数据点上，则隐藏提示信息
         QToolTip::hideText();
+
+        // 恢复扇形的正常大小
+        if (slice) {
+            slice->setExploded(false);
+        }
     }
 }
+
 //处理柱状图
 void datavisualization::updateTooltip3(bool hovered, int index, QBarSet* barset)
 {
@@ -607,5 +691,30 @@ void datavisualization::updateTooltip3(bool hovered, int index, QBarSet* barset)
         QToolTip::hideText();
     }
 }
+
+
+
+// 处理折线散点图的悬停信号
+void datavisualization::updateTooltip4(QPointF point, bool state)
+{
+
+    if (state) {
+        // 放大散点
+        scatterSeries->setMarkerSize(10); // 设置散点大小为10（放大）
+
+        // 格式化提示信息
+        QString tooltip = QString("日期: %1号, 气温: %2°C").arg(point.x()).arg(point.y());
+
+        // 显示提示信息
+        QToolTip::showText(QCursor::pos(), tooltip);
+    } else {
+        // 鼠标移出散点范围，恢复原始大小
+        scatterSeries->setMarkerSize(4.5); // 设置散点大小为5（原始大小）
+
+        // 隐藏提示信息
+        QToolTip::hideText();
+    }
+}
+
 
 

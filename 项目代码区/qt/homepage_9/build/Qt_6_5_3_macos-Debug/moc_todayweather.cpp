@@ -6,7 +6,7 @@
 ** WARNING! All changes made in this file will be lost!
 *****************************************************************************/
 
-#include "../../todayweather.h"
+#include "../../../homepage_10/todayweather.h"
 #include <QtGui/qtextcursor.h>
 #include <QtCore/qmetatype.h>
 

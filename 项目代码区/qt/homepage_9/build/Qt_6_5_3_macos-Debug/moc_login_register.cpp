@@ -6,7 +6,7 @@
 ** WARNING! All changes made in this file will be lost!
 *****************************************************************************/
 
-#include "../../login_register.h"
+#include "../../../homepage_10/login_register.h"
 #include <QtGui/qtextcursor.h>
 #include <QtCore/qmetatype.h>
 
