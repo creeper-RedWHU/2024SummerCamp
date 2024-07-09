@@ -96,6 +96,7 @@ datavisualization::datavisualization(QWidget *parent)
     series4 = new QLineSeries;
     series2 = new QPieSeries;
     series3 = new QBarSeries;
+    scatterSeries = new QScatterSeries();
 
 
 
@@ -139,10 +140,12 @@ datavisualization::datavisualization(QWidget *parent)
     chartview3->setRenderHint(QPainter::Antialiasing);
 
     // 连接鼠标悬停事件信号与槽函数
-    connect(series1, &QLineSeries::hovered, this, &datavisualization::updateTooltip1);
+
     connect(series4, &QLineSeries::hovered, this, &datavisualization::updateTooltip1);
     connect(series2, &QPieSeries::hovered, this, &datavisualization::updateTooltip2);
     connect(series3, &QBarSeries::hovered, this, &datavisualization::updateTooltip3);
+    connect(scatterSeries, &QScatterSeries::hovered, this, &datavisualization::updateTooltip4);
+
 
 
     // 布局设置
@@ -239,25 +242,50 @@ void datavisualization::mydraw()
     // 清空原有数据
     series1->clear();
 
+
+
     // 清空原有散点数据
     foreach (QAbstractSeries *s, chart1->series()) {
         chart1->removeSeries(s);
     }
 
     // 填充新数据，同时添加散点数据
-    QScatterSeries *scatterSeries = new QScatterSeries(); // 散点系列只需要创建一次
+
     scatterSeries->setMarkerShape(QScatterSeries::MarkerShapeCircle); // 设置散点形状为圆形
     scatterSeries->setMarkerSize(4.5); // 设置散点大小为 4.5 像素
     QValueAxis *xAxis = new QValueAxis;
-     QValueAxis *yAxis = new QValueAxis();
+    QValueAxis *yAxis = new QValueAxis();
+
+
+    int minY = 100;  // 初始化为一个非常大的数，作为最小值
+    int maxY = -100;  // 初始化为一个非常小的数，作为最大值
+    int minX = 100;  // 初始化为一个非常大的数，作为最小值
+    int maxX = -100;  // 初始化为一个非常小的数，作为最大值
 
     while (query.next()) {
         int day = query.value("day").toInt(); // 获取天数
         int y1_value = query.value("max_temperature").toInt();
         series1->append(day, y1_value); // 添加折线图数据
         scatterSeries->append(day, y1_value); // 添加散点数据
-    }
 
+        // 更新最小和最大温度值
+        if (y1_value < minY) {
+            minY = y1_value;
+        }
+        if (y1_value > maxY) {
+            maxY = y1_value;
+        }
+
+        // 更新最小和最大天数
+        if (day < minX) {
+            minX = day;
+        }
+        if (day > maxX) {
+            maxX = day;
+        }
+    }
+    xAxis->setRange(minX-1, maxX+1);
+    yAxis->setRange(minY-1, maxY+1);
     // 将折线图系列添加到图表中
     chart1->addSeries(series1);
 
@@ -457,7 +485,7 @@ void datavisualization::mydraw()
     QBarSet *barset6 = new QBarSet("东北风");
     QBarSet *barset7 = new QBarSet("西南风");
     QBarSet *barset8 = new QBarSet("西北风");
-    QBarSet *barset9 = new QBarSet("微风");
+    QBarSet *barset9 = new QBarSet("无持续风向");
 
     barset1->setColor(Qt::red);
     barset2->setColor(Qt::blue);
@@ -502,7 +530,10 @@ void datavisualization::mydraw()
             wind8++;
         } else if (wind_direction == "微风") {
             wind9++;
+        }else if (wind_direction == "无持续风向") {
+            wind9++;
         }
+
 
 
     }
@@ -627,18 +658,29 @@ void datavisualization::updateTooltip1(QPointF point, bool state)
         QToolTip::hideText();
     }
 }
-//处理饼状图的悬停信号
 void datavisualization::updateTooltip2(QPieSlice *slice, bool state)
 {
     if (state && slice) {
         QString tooltip = QString("饼状图 - %1: %2").arg(slice->label()).arg(slice->value());
-        // 显示提示信息
         QToolTip::showText(QCursor::pos(), tooltip);
+
+        // 放大当前悬停的扇形
+        slice->setExploded(true);
+        slice->setLabelVisible(true); // 可选：显示扇形的标签
+
+        // 如果有需要，您还可以修改扇形的颜色或其他属性
+        // slice->setBrush(...);
+
     } else {
-        // 如果鼠标不在数据点上，则隐藏提示信息
         QToolTip::hideText();
+
+        // 恢复扇形的正常大小
+        if (slice) {
+            slice->setExploded(false);
+        }
     }
 }
+
 //处理柱状图
 void datavisualization::updateTooltip3(bool hovered, int index, QBarSet* barset)
 {
@@ -651,6 +693,28 @@ void datavisualization::updateTooltip3(bool hovered, int index, QBarSet* barset)
 }
 
 
+
+// 处理折线散点图的悬停信号
+void datavisualization::updateTooltip4(QPointF point, bool state)
+{
+
+    if (state) {
+        // 放大散点
+        scatterSeries->setMarkerSize(10); // 设置散点大小为10（放大）
+
+        // 格式化提示信息
+        QString tooltip = QString("日期: %1号, 气温: %2°C").arg(point.x()).arg(point.y());
+
+        // 显示提示信息
+        QToolTip::showText(QCursor::pos(), tooltip);
+    } else {
+        // 鼠标移出散点范围，恢复原始大小
+        scatterSeries->setMarkerSize(4.5); // 设置散点大小为5（原始大小）
+
+        // 隐藏提示信息
+        QToolTip::hideText();
+    }
+}
 
 
 

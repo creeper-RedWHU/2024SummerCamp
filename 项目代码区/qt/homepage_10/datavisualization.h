@@ -30,6 +30,7 @@ public:
     QLineSeries *series4;  //数据系列
     QPieSeries *series2;  //数据系列
     QBarSeries *series3;  //数据系列
+    QScatterSeries *scatterSeries;
 
     QBarSet* barset1;  //柱状图的"柱"
     QBarSet* barset2;
@@ -66,6 +67,7 @@ public:
     void updateTooltip1(QPointF point, bool state);
     void updateTooltip2(QPieSlice *slice, bool state);
     void updateTooltip3(bool hovered, int index, QBarSet* barset);
+    void updateTooltip4(QPointF point, bool state);
     bool connectToDatabase();
 
 
