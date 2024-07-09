@@ -187,19 +187,19 @@ datavisualization::~datavisualization()
 //连接数据库
 bool datavisualization::connectToDatabase()
 {
-    db = QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("60.205.232.122");
-    db.setDatabaseName("data");
-    db.setUserName("root");
-    db.setPassword("123456");
-
-    // QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");// 建立和QSQLITE数据库的连接
-    // db.setHostName("127.0.0.1");  //连接本地主机
-    // db.setPort(3306);
+    // db = QSqlDatabase::addDatabase("QMYSQL");
+    // db.setHostName("60.205.232.122");
+    // db.setDatabaseName("data");
     // db.setUserName("root");
-    // //设置数据库的密码
-    // db.setPassword("mt127715318");    //这个就是安装MySQL时设置的密码
-    // db.setDatabaseName("/Users/motao/demo1.db");//设置数据库名称
+    // db.setPassword("123456");
+
+    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");// 建立和QSQLITE数据库的连接
+    db.setHostName("127.0.0.1");  //连接本地主机
+    db.setPort(3306);
+    db.setUserName("root");
+    //设置数据库的密码
+    db.setPassword("mt127715318");    //这个就是安装MySQL时设置的密码
+    db.setDatabaseName("/Users/motao/demo1.db");//设置数据库名称
 
     if (!db.open()) {
         qDebug() << "Database error occurred:" << db.lastError();
@@ -251,38 +251,55 @@ void datavisualization::mydraw()
     // 清空原有数据
     series1->clear();
 
-    // 填充新数据
+    // 清空原有散点数据
+    foreach (QAbstractSeries *s, chart1->series()) {
+        chart1->removeSeries(s);
+    }
+
+    // 填充新数据，同时添加散点数据
+    QScatterSeries *scatterSeries = new QScatterSeries(); // 散点系列只需要创建一次
+    scatterSeries->setMarkerShape(QScatterSeries::MarkerShapeCircle); // 设置散点形状为圆形
+    scatterSeries->setMarkerSize(8); // 设置散点大小为 8 像素
+    QValueAxis *xAxis = new QValueAxis;
+     QValueAxis *yAxis = new QValueAxis();
+
     while (query.next()) {
         int day = query.value("day").toInt(); // 获取天数
         int y1_value = query.value("max_temperature").toInt();
-        series1->append(day, y1_value); // 使用天数作为 x 轴坐标
+        series1->append(day, y1_value); // 添加折线图数据
+        scatterSeries->append(day, y1_value); // 添加散点数据
     }
 
-    // 更新图表1
-    chart1->removeSeries(series1);
+    // 将折线图系列添加到图表中
     chart1->addSeries(series1);
 
+    // 将散点系列添加到图表中，并绑定轴
+    chart1->addSeries(scatterSeries);
+    scatterSeries->attachAxis(xAxis);
+    scatterSeries->attachAxis(yAxis);
+
     // 更新图表1的标题
-    chart1->setTitle("最高气温折线图");
-    qDebug() << "Updated chart1 title to '最高气温折线图'.";
+    chart1->setTitle("最高气温折线图（含散点）");
+    qDebug() << "Updated chart1 title to '最高气温折线图（含散点）'.";
 
     chart1->removeAxis(chart1->axisX());
     chart1->removeAxis(chart1->axisY());
 
     // 修改图表1的 x 轴信息
-    QValueAxis *xAxis = new QValueAxis;
     xAxis->setLabelFormat("%d"); // 设置轴标签格式为整数（天数）
     xAxis->setTitleText("日期（天）"); // 设置轴标题
     chart1->addAxis(xAxis, Qt::AlignBottom); // 将 x 轴添加到图表的底部
     series1->attachAxis(xAxis); // 将 series1 与 x 轴绑定
+    scatterSeries->attachAxis(xAxis); // 将散点系列与 x 轴绑定
     qDebug() << "Updated chart1 x-axis format and title.";
 
     // 修改图表1的 y 轴信息
-    QValueAxis *yAxis = new QValueAxis();
+
     yAxis->setLabelsVisible(true); // 设置轴标签可见
     yAxis->setTitleText("最高气温/°C"); // 设置轴标题
     chart1->addAxis(yAxis, Qt::AlignLeft); // 将 y 轴添加到图表的左侧
     series1->attachAxis(yAxis); // 将 series1 与 y 轴绑定
+    scatterSeries->attachAxis(yAxis); // 将散点系列与 y 轴绑定
     qDebug() << "Updated chart1 y-axis format and title.";
 
     // 刷新图表1显示
@@ -385,10 +402,10 @@ void datavisualization::mydraw()
             }
         }
 
-        qDebug() << "Weather counts:";
-        for (auto it = weatherCounts.constBegin(); it != weatherCounts.constEnd(); ++it) {
-            qDebug() << it.key() << ":" << it.value();
-        }
+        // qDebug() << "Weather counts:";
+        // for (auto it = weatherCounts.constBegin(); it != weatherCounts.constEnd(); ++it) {
+        //     qDebug() << it.key() << ":" << it.value();
+        // }
 
         series2->clear();
         for (auto it = weatherCounts.constBegin(); it != weatherCounts.constEnd(); ++it) {
@@ -571,13 +588,12 @@ void datavisualization::mydraw()
 
 }
 
-
 //处理折现图的悬停信号
 void datavisualization::updateTooltip1(QPointF point, bool state)
 {
     if (state) {
         // 格式化提示信息
-        QString tooltip = QString("X: %1, Y: %2").arg(point.x()).arg(point.y());
+        QString tooltip = QString("日期: %1, 气温: %2°C").arg(static_cast<int>(point.x())).arg(static_cast<int>(point.y()));
         // 设置提示信息
         QToolTip::showText(QCursor::pos(), tooltip);
     } else {
@@ -607,5 +623,8 @@ void datavisualization::updateTooltip3(bool hovered, int index, QBarSet* barset)
         QToolTip::hideText();
     }
 }
+
+
+
 
 

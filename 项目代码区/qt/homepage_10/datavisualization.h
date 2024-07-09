@@ -69,6 +69,7 @@ public:
     bool connectToDatabase();
 
 
+
     void mydraw();
 
 private slots:  // Add this line
