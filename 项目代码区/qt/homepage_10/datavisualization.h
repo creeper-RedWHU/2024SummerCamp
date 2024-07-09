@@ -70,6 +70,7 @@ public:
 
 
 
+
     void mydraw();
 
 private slots:  // Add this line

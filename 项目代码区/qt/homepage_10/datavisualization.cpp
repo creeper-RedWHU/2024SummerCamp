@@ -97,18 +97,6 @@ datavisualization::datavisualization(QWidget *parent)
     series2 = new QPieSeries;
     series3 = new QBarSeries;
 
-    barset1 = new QBarSet("东风");
-    barset2 = new QBarSet("西风");
-    barset3 = new QBarSet("南风");
-    barset4 = new QBarSet("北风");
-    barset5 = new QBarSet("东南风");
-    barset6 = new QBarSet("东北风");
-    barset7 = new QBarSet("西南风");
-    barset8 = new QBarSet("西北风");
-    barset9 = new QBarSet("微风");
-
-
-
 
 
     // 创建图表并添加数据系列
@@ -259,7 +247,7 @@ void datavisualization::mydraw()
     // 填充新数据，同时添加散点数据
     QScatterSeries *scatterSeries = new QScatterSeries(); // 散点系列只需要创建一次
     scatterSeries->setMarkerShape(QScatterSeries::MarkerShapeCircle); // 设置散点形状为圆形
-    scatterSeries->setMarkerSize(8); // 设置散点大小为 8 像素
+    scatterSeries->setMarkerSize(4.5); // 设置散点大小为 4.5 像素
     QValueAxis *xAxis = new QValueAxis;
      QValueAxis *yAxis = new QValueAxis();
 
@@ -393,6 +381,16 @@ void datavisualization::mydraw()
         weatherCounts.insert("中雨转雨", 0);
         weatherCounts.insert("小雨转雨", 0);
 
+        QMap<QString, QColor> weatherColors;
+        for (auto it = weatherCounts.begin(); it != weatherCounts.end(); ++it) {
+            int red = QRandomGenerator::global()->bounded(256);    // 随机生成 0 到 255 之间的整数
+            int green = QRandomGenerator::global()->bounded(256);
+            int blue = QRandomGenerator::global()->bounded(256);
+            QColor randomColor(red, green, blue);
+            weatherColors.insert(it.key(), randomColor);
+        }
+
+
         while (query1.next()) {
             QString weather = query1.value(0).toString();
             if (weatherCounts.contains(weather)) {
@@ -409,7 +407,19 @@ void datavisualization::mydraw()
 
         series2->clear();
         for (auto it = weatherCounts.constBegin(); it != weatherCounts.constEnd(); ++it) {
-            series2->append(it.key(), it.value());
+            QString weather = it.key();
+            int count = it.value();
+
+            if (count > 0) {
+                QPieSlice *slice = series2->append(weather, count);
+
+                if (weatherColors.contains(weather)) {
+                    slice->setBrush(weatherColors[weather]);
+                } else {
+                    // Handle unknown weather type color
+                    slice->setBrush(Qt::black); // or any default color
+                }
+            }
         }
 
         chart2->setTitle("天气饼状图");
@@ -444,6 +454,16 @@ void datavisualization::mydraw()
     QBarSet *barset7 = new QBarSet("西南风");
     QBarSet *barset8 = new QBarSet("西北风");
     QBarSet *barset9 = new QBarSet("微风");
+
+    barset1->setColor(Qt::red);
+    barset2->setColor(Qt::blue);
+    barset3->setColor(Qt::green);
+    barset4->setColor(Qt::yellow);
+    barset5->setColor(Qt::cyan);
+    barset6->setColor(Qt::magenta);
+    barset7->setColor(Qt::gray);
+    barset8->setColor(Qt::darkRed);
+    barset9->setColor(Qt::darkBlue);
 
     // 初始化八个风向的风力计数器
     int wind1 = 0;  // 东风
@@ -593,7 +613,9 @@ void datavisualization::updateTooltip1(QPointF point, bool state)
 {
     if (state) {
         // 格式化提示信息
-        QString tooltip = QString("日期: %1, 气温: %2°C").arg(static_cast<int>(point.x())).arg(static_cast<int>(point.y()));
+        QString tooltip = QString("日期: %1, 气温: %2°C")
+                              .arg(QString::number(point.x(), 'f', 1)) // x 轴数据保留一位小数
+                              .arg(QString::number(point.y(), 'f', 1)); // y 轴数据保留一位小数
         // 设置提示信息
         QToolTip::showText(QCursor::pos(), tooltip);
     } else {
