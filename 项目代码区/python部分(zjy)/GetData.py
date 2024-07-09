@@ -121,11 +121,20 @@ def get_data(url, city, year, month):
         item = str(item)
         link = re.findall(findLinkDate, item)
         datas = re.findall(findDataEach, item)
+        '''
         conn = pymysql.connect(
             host='localhost',
             port=3306,
             user='root',
             password='zhoujin@MySQL',
+            charset='utf8',
+            database="data"
+        )'''
+        conn = pymysql.connect(
+            host='60.205.232.122',
+            port=3306,
+            user='root',
+            password='123456',
             charset='utf8',
             database="data"
         )
@@ -164,11 +173,22 @@ def update(ct, startYear, endYear, startMonth, endMonth):
 
 
 def whetherhas(ct, year, month):
+
+    '''
     conn = pymysql.connect(
         host='localhost',
         port=3306,
         user='root',
         password='zhoujin@MySQL',
+        charset='utf8',
+        database="data"
+    )
+    '''
+    conn = pymysql.connect(
+        host='60.205.232.122',
+        port=3306,
+        user='root',
+        password='123456',
         charset='utf8',
         database="data"
     )
@@ -227,6 +247,7 @@ def fetchData(ct, startYear, endYear, startMonth, endMonth):
 # GetDataByHours:获得过去24小时温度数据
 # 思路：先获得逐小时天气预报数据，然后插值法扩充数据，最后再用线性拟合/多项式拟合
 def GetDataByHours(ct):
+    '''
     conn = pymysql.connect(
         host='localhost',
         port=3306,
@@ -234,7 +255,16 @@ def GetDataByHours(ct):
         password='zhoujin@MySQL',
         charset='utf8',
         database="data"
+    )'''
+    conn = pymysql.connect(
+        host='60.205.232.122',
+        port=3306,
+        user='root',
+        password='123456',
+        charset='utf8',
+        database="data"
     )
+
     url = "https://datashareclub.com/area/"
     province = {"武汉": "湖北", "杭州": "浙江","长沙":"湖南","北京":"北京","上海":"上海","南京":"江苏"}
     url += province[ct] + '/' + ct + '.html'
@@ -272,12 +302,12 @@ if __name__ == '__main__':
         print("City ",city,"'s data from",syear,".",smonth,"to",eyear,".",emonth,end='')
         print()
     '''
-    '''
-    city="武汉"
+
+    city="长沙"
     syear=2012
     smonth=7
     eyear=2012
     emonth=8
     fetchData(city,syear,eyear,smonth,emonth)
-    '''
-    GetDataByHours("武汉")
+    ''''''
+    'GetDataByHours("武汉")'

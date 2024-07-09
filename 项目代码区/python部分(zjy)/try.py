@@ -156,19 +156,19 @@ def main():
 
     # 设置超参数
     input_size = len(custom_dataset.X.columns)  # 特征数量
-    hidden_size = 32  # 隐藏层大小
+    hidden_size = 20  # 隐藏层大小
     # 隐藏层大小是指每个LSTM单元中的隐藏状态向量的维度，它在很大程度上影响了模型的表示能力和性能
     # 如果隐藏层太大，模型可能会过拟合训练数据，对测试数据表现不佳。
     # 如果隐藏层太小，模型可能无法捕捉到足够的信息，导致欠拟合。
 
     output_size = 1  # 输出大小（预测当日票房）
 
-    num_layers = 64 # LSTM层数
+    num_layers = 20 # LSTM层数
     # 单层LSTM：适用于简单的序列建模任务，结构简单，计算效率高。
     # 多层LSTM：适用于复杂的序列建模任务，能够捕捉更复杂的模式和长距离依赖，但需要更多的计算资源。
     # 层数选择：需要通过实验来确定，考虑任务复杂度、数据量和计算资源。
 
-    learning_rate = 0.001  # 学习率
+    learning_rate = 0.01  # 学习率
     # 对于较小的网络或简单任务，较大的学习率（如 0.01)可能是合适的。
     # 对于较深的网络或复杂任务，较小的学习率（如 0.0001)可能是必要的。
 
@@ -186,7 +186,7 @@ def main():
     # Adam：适用于大多数情况，特别是有噪声的梯度和稀疏梯度的情形。
 
     # 训练模型
-    '''
+    ''''''
     try:
         epoch = 0
         model.train()
@@ -240,10 +240,10 @@ def main():
     except KeyboardInterrupt:
         # ctrl+c中止训练
         print("训练已中止。")
-    '''
+
     model_predict = LSTMModel(input_size, hidden_size, output_size, num_layers)
     model_predict.load_state_dict(torch.load('D:/model/lstm_model_100.pth'))
-    input_data=np.array([2025,8,1])
+    input_data=np.array([2025,1,1])
     prediction=predict(model_predict,input_data,custom_dataset.scaler)
     print(prediction)
 
