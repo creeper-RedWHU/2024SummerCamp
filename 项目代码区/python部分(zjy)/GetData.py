@@ -308,9 +308,15 @@ if __name__ == '__main__':
     '''
 
     city="长沙"
+<<<<<<< HEAD
     syear=2020
     smonth=5
     eyear=2020
+=======
+    syear=2012
+    smonth=7
+    eyear=2012
+>>>>>>> 499f718c4dabde19be8619e0734a26b57adbdda4
     emonth=8
     fetchData(city,syear,eyear,smonth,emonth)
     ''''''
