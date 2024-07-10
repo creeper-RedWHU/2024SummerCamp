@@ -41,7 +41,7 @@ private:
 
     QSqlDatabase db;
 
-    // bool connectToDatabase();
+    bool connectToDatabase();
     bool authenticate(const QString &username, const QString &password, int &identity);
     bool userExists(const QString &username);
     void saveUser(const QString &username, const QString &password);

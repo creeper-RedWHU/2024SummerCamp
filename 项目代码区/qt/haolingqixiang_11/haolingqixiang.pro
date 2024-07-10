@@ -44,8 +44,7 @@ FORMS += \
     sectionwidget.ui \
     todayweather.ui
 
-INCLUDEPATH += -I D:\anaconda\envs\weather\include
-LIBS += -LD:\anaconda\envs\weather\libs -lpython38
+
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

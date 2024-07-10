@@ -18,6 +18,8 @@ class datavisualization;
 }
 
 
+
+
 class datavisualization : public QWidget
 {
     Q_OBJECT
@@ -30,6 +32,7 @@ public:
     QLineSeries *series4;  //数据系列
     QPieSeries *series2;  //数据系列
     QBarSeries *series3;  //数据系列
+
     QScatterSeries *scatterSeries;
 
     QBarSet* barset1;  //柱状图的"柱"
@@ -82,5 +85,9 @@ private slots:  // Add this line
 private:
     Ui::datavisualization *ui;
 };
+
+
+
+
 
 #endif // DATAVISUALIZATION_H

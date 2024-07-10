@@ -252,7 +252,7 @@ void datavisualization::mydraw()
     // 填充新数据，同时添加散点数据
 
     scatterSeries->setMarkerShape(QScatterSeries::MarkerShapeCircle); // 设置散点形状为圆形
-    scatterSeries->setMarkerSize(4.5); // 设置散点大小为 4.5 像素
+    scatterSeries->setMarkerSize(9); // 设置散点大小为 7 像素
     QValueAxis *xAxis = new QValueAxis;
     QValueAxis *yAxis = new QValueAxis();
 
@@ -284,8 +284,8 @@ void datavisualization::mydraw()
             maxX = day;
         }
     }
-    xAxis->setRange(minX-1, maxX+1);
-    yAxis->setRange(minY-1, maxY+1);
+    xAxis->setRange(minX-0.5, maxX+0.5);
+    yAxis->setRange(minY-2, maxY+2);
     // 将折线图系列添加到图表中
     chart1->addSeries(series1);
 
@@ -490,12 +490,12 @@ void datavisualization::mydraw()
     barset1->setColor(Qt::red);
     barset2->setColor(Qt::blue);
     barset3->setColor(Qt::green);
-    barset4->setColor(Qt::yellow);
+    barset4->setColor(Qt::black);
     barset5->setColor(Qt::cyan);
     barset6->setColor(Qt::magenta);
-    barset7->setColor(Qt::gray);
+    barset7->setColor(Qt::yellow);
     barset8->setColor(Qt::darkRed);
-    barset9->setColor(Qt::darkBlue);
+    barset9->setColor(Qt::lightGray);
 
     // 初始化八个风向的风力计数器
     int wind1 = 0;  // 东风
@@ -561,6 +561,17 @@ void datavisualization::mydraw()
     series3->append(barset8);
     series3->append(barset9);
     connect(series3, &QBarSeries::hovered, this, &datavisualization::updateTooltip3);
+
+
+
+    // Add space to label to add space between labels and axis在标签和轴之间加空格
+    QValueAxis *axisY3 = qobject_cast<QValueAxis*>(chart3->axes(Qt::Vertical).first());
+    Q_ASSERT(axisY3);
+    axisY3->setLabelFormat("%.2f");
+
+    series3->setLabelsPosition(QAbstractBarSeries::LabelsInsideEnd);  //设置柱状图标签显示的位置
+    series3->setLabelsVisible(true);  //设置柱状图数据标签可见
+
 
 
 
@@ -694,13 +705,14 @@ void datavisualization::updateTooltip3(bool hovered, int index, QBarSet* barset)
 
 
 
+
 // 处理折线散点图的悬停信号
 void datavisualization::updateTooltip4(QPointF point, bool state)
 {
 
     if (state) {
         // 放大散点
-        scatterSeries->setMarkerSize(10); // 设置散点大小为10（放大）
+        scatterSeries->setMarkerSize(12); // 设置散点大小为10（放大）
 
         // 格式化提示信息
         QString tooltip = QString("日期: %1号, 气温: %2°C").arg(point.x()).arg(point.y());
@@ -709,7 +721,7 @@ void datavisualization::updateTooltip4(QPointF point, bool state)
         QToolTip::showText(QCursor::pos(), tooltip);
     } else {
         // 鼠标移出散点范围，恢复原始大小
-        scatterSeries->setMarkerSize(4.5); // 设置散点大小为5（原始大小）
+        scatterSeries->setMarkerSize(9); // 设置散点大小为9（原始大小）
 
         // 隐藏提示信息
         QToolTip::hideText();
