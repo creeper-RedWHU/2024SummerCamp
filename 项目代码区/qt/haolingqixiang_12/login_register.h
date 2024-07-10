@@ -11,6 +11,11 @@
 #include <QSqlDatabase>
 #include <QSqlQuery>
 #include <QSqlError>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QNetworkRequest>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
 
 namespace Ui {
 class login_register;
@@ -25,13 +30,16 @@ public:
     ~login_register();
 
 private slots:
-    void onLoginClicked();
-    void onRegisterClicked();
+    void on_loginButton_clicked();
+    void handleLoginReply();
+    void on_registerButton_clicked();
     void onShowPasswordChecked(int state);
+    void handleRegisterReply();
 
 private:
     Ui::login_register *ui;
 
+    QNetworkAccessManager *networkManager;
     QPushButton *btn1;
     QPushButton *btn2;
     QVBoxLayout *layout;
