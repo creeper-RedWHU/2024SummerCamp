@@ -241,7 +241,7 @@ void datavisualization::mydraw()
 
     // 清空原有数据
     series1->clear();
-
+    scatterSeries->clear();
 
 
     // 清空原有散点数据
@@ -252,7 +252,7 @@ void datavisualization::mydraw()
     // 填充新数据，同时添加散点数据
 
     scatterSeries->setMarkerShape(QScatterSeries::MarkerShapeCircle); // 设置散点形状为圆形
-    scatterSeries->setMarkerSize(9); // 设置散点大小为 7 像素
+    scatterSeries->setMarkerSize(9); // 设置散点大小为 4.5 像素
     QValueAxis *xAxis = new QValueAxis;
     QValueAxis *yAxis = new QValueAxis();
 
@@ -285,7 +285,7 @@ void datavisualization::mydraw()
         }
     }
     xAxis->setRange(minX-0.5, maxX+0.5);
-    yAxis->setRange(minY-2, maxY+2);
+    yAxis->setRange(minY-1, maxY+1);
     // 将折线图系列添加到图表中
     chart1->addSeries(series1);
 
@@ -579,15 +579,18 @@ void datavisualization::mydraw()
     chart3->removeAllSeries();
     chart3->addSeries(series3);
     chart3->setTitle("风向统计图表");
-    chart3->createDefaultAxes();
     chart3->legend()->setVisible(true);
     chart3->legend()->setAlignment(Qt::AlignBottom);
 
+    QStringList categories;
+    categories << "风向" ;  //保存横坐标字符串的列表
+    QBarCategoryAxis *axis4 = new QBarCategoryAxis();
+    axis4->append(categories);
+    chart3->createDefaultAxes();
+    chart3->setAxisX(axis4, series3);
+
     // 释放查询结果和内存
     query2.finish();
-
-    // 输出调试信息以确认操作完成
-    qDebug() << "Chart updated with wind direction data.";
 
     chartview2->update();
 
