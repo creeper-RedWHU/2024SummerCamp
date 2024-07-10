@@ -336,6 +336,8 @@ void datavisualization::mydraw()
     query1.bindValue(":sday", Qstartday);
     query1.bindValue(":eday", Qendday);
 
+
+
     // 执行查询语句
     if (!query1.exec()) {
         qDebug() << "Query execution failed. Error:" << query1.lastError().text();
@@ -434,10 +436,11 @@ void datavisualization::mydraw()
         // }
 
         series2->clear();
+
         for (auto it = weatherCounts.constBegin(); it != weatherCounts.constEnd(); ++it) {
             QString weather = it.key();
             int count = it.value();
-
+            int total=Qendday-Qstartday+1;
             if (count > 0) {
                 QPieSlice *slice = series2->append(weather, count);
 
@@ -447,11 +450,12 @@ void datavisualization::mydraw()
                     // Handle unknown weather type color
                     slice->setBrush(Qt::black); // or any default color
                 }
-                // Set label to weather type
-                slice->setLabel(weather);
+
+                // Set label to show weather type and percentage
+                QString label = QString("%1 (%2%)").arg(weather).arg(QString::number(static_cast<double>(count) / total * 100, 'f', 1));
+                slice->setLabel(label);
                 slice->setLabelVisible(true); // Make label visible
             }
-
         }
 
         chart2->setTitle("天气饼状图");
@@ -459,9 +463,6 @@ void datavisualization::mydraw()
 
         chartview2->update();
 
-        qDebug() << "Chart2 updated with new data. Series count:" << series2->count();
-
-        qDebug() << "Data processing and chart update completed.";
     }
 
 
@@ -488,7 +489,7 @@ void datavisualization::mydraw()
     QBarSet *barset9 = new QBarSet("无持续风向");
 
     barset1->setColor(Qt::red);
-    barset2->setColor(Qt::blue);
+    barset2->setColor(Qt::darkBlue);
     barset3->setColor(Qt::green);
     barset4->setColor(Qt::darkGreen);
     barset5->setColor(Qt::cyan);
@@ -568,10 +569,8 @@ void datavisualization::mydraw()
     QValueAxis *axisY3 = qobject_cast<QValueAxis*>(chart3->axes(Qt::Vertical).first());
     Q_ASSERT(axisY3);
     axisY3->setLabelFormat("%.2f");
-
     series3->setLabelsPosition(QAbstractBarSeries::LabelsInsideEnd);  //设置柱状图标签显示的位置
     series3->setLabelsVisible(true);  //设置柱状图数据标签可见
-
 
 
 
@@ -657,7 +656,7 @@ void datavisualization::mydraw()
 
 }
 
-//处理折现图的悬停信号
+//处理折线图的悬停信号
 void datavisualization::updateTooltip1(QPointF point, bool state)
 {
     if (state) {
@@ -672,6 +671,8 @@ void datavisualization::updateTooltip1(QPointF point, bool state)
         QToolTip::hideText();
     }
 }
+
+//处理饼状图的悬停信号
 void datavisualization::updateTooltip2(QPieSlice *slice, bool state)
 {
     if (state && slice) {
