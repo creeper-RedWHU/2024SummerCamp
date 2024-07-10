@@ -97,6 +97,8 @@ datavisualization::datavisualization(QWidget *parent)
     series2 = new QPieSeries;
     series3 = new QBarSeries;
     scatterSeries = new QScatterSeries();
+    scatterSeries4 = new QScatterSeries();
+
 
 
 
@@ -140,11 +142,10 @@ datavisualization::datavisualization(QWidget *parent)
     chartview3->setRenderHint(QPainter::Antialiasing);
 
     // 连接鼠标悬停事件信号与槽函数
-
-    connect(series4, &QLineSeries::hovered, this, &datavisualization::updateTooltip1);
     connect(series2, &QPieSeries::hovered, this, &datavisualization::updateTooltip2);
     connect(series3, &QBarSeries::hovered, this, &datavisualization::updateTooltip3);
     connect(scatterSeries, &QScatterSeries::hovered, this, &datavisualization::updateTooltip4);
+    connect(scatterSeries4, &QScatterSeries::hovered, this, &datavisualization::updateTooltip5);
 
 
 
@@ -598,57 +599,102 @@ void datavisualization::mydraw()
 
 
     // 查询数据库获取最高气温数据
-    QSqlQuery query3;  // 使用现有的数据库连接
-    query3.prepare("SELECT day,min_temperature FROM climate WHERE city = :city AND year = :year AND month = :month AND day <= :eday AND day >= :sday");
-    query3.bindValue(":city", Qcity);
-    query3.bindValue(":year", Qyear);
-    query3.bindValue(":month", Qmonth);
-    query3.bindValue(":sday", Qstartday);
-    query3.bindValue(":eday", Qendday);
+    QSqlQuery query4;  // 使用现有的数据库连接
+    query4.prepare("SELECT day,min_temperature FROM climate WHERE city = :city AND year = :year AND month = :month AND day <= :eday AND day >= :sday");
+    query4.bindValue(":city", Qcity);
+    query4.bindValue(":year", Qyear);
+    query4.bindValue(":month", Qmonth);
+    query4.bindValue(":sday", Qstartday);
+    query4.bindValue(":eday", Qendday);
 
-    if (!query3.exec()) {
+    if (!query4.exec()) {
         qDebug() << "Query execution failed:" << query.lastError().text();
     }
 
 
     // 清空原有数据
     series4->clear();
+    scatterSeries4->clear();
 
-    // 填充新数据
-    while (query3.next()) {
-        int day = query3.value("day").toInt(); // 获取天数
-        int y1_value = query3.value("min_temperature").toInt();
-        series4->append(day, y1_value); // 使用天数作为 x 轴坐标
+
+    // 清空原有散点数据
+    foreach (QAbstractSeries *s, chart4->series()) {
+        chart1->removeSeries(s);
     }
 
-    // 更新图表1
-    chart4->removeSeries(series4);
+    // 填充新数据，同时添加散点数据
+
+    scatterSeries4->setMarkerShape(QScatterSeries::MarkerShapeCircle); // 设置散点形状为圆形
+    scatterSeries4->setMarkerSize(9); // 设置散点大小为 4.5 像素
+    QValueAxis *xAxis4 = new QValueAxis;
+    QValueAxis *yAxis4 = new QValueAxis();
+
+
+    int minY4 = 100;  // 初始化为一个非常大的数，作为最小值
+    int maxY4 = -100;  // 初始化为一个非常小的数，作为最大值
+    int minX4 = 100;  // 初始化为一个非常大的数，作为最小值
+    int maxX4 = -100;  // 初始化为一个非常小的数，作为最大值
+
+    while (query4.next()) {
+        int day = query4.value("day").toInt(); // 获取天数
+        int y1_value = query4.value("min_temperature").toInt();
+        series4->append(day, y1_value); // 添加折线图数据
+        scatterSeries4->append(day, y1_value); // 添加散点数据
+
+        // 更新最小和最大温度值
+        if (y1_value < minY4) {
+            minY4 = y1_value;
+        }
+        if (y1_value > maxY4) {
+            maxY4 = y1_value;
+        }
+
+        // 更新最小和最大天数
+        if (day < minX4) {
+            minX4 = day;
+        }
+        if (day > maxX4) {
+            maxX4 = day;
+        }
+    }
+    xAxis4->setRange(minX4-0.5, maxX4+0.5);
+    yAxis4->setRange(minY4-1, maxY4+1);
+    // 将折线图系列添加到图表中
     chart4->addSeries(series4);
 
-    // 更新图表1的标题
-    chart4->setTitle("最低气温折线图");
+    // 将散点系列添加到图表中，并绑定轴
+    chart4->addSeries(scatterSeries4);
+    scatterSeries4->attachAxis(xAxis4);
+    scatterSeries4->attachAxis(yAxis4);
 
+    // 更新图表1的标题
+    chart4->setTitle("最低气温折线图（含散点）");
+    qDebug() << "Updated chart4 title to '最低气温折线图（含散点）'.";
 
     chart4->removeAxis(chart4->axisX());
     chart4->removeAxis(chart4->axisY());
 
     // 修改图表1的 x 轴信息
-    QValueAxis *xAxis4 = new QValueAxis;
     xAxis4->setLabelFormat("%d"); // 设置轴标签格式为整数（天数）
     xAxis4->setTitleText("日期（天）"); // 设置轴标题
     chart4->addAxis(xAxis4, Qt::AlignBottom); // 将 x 轴添加到图表的底部
-    series4->attachAxis(xAxis4); // 将 series1 与 x 轴绑定
+    series4->attachAxis(xAxis4);
+    scatterSeries4->attachAxis(xAxis4); // 将散点系列与 x 轴绑定
+    qDebug() << "Updated chart4 x-axis format and title.";
 
     // 修改图表1的 y 轴信息
-    QValueAxis *yAxis4 = new QValueAxis();
+
     yAxis4->setLabelsVisible(true); // 设置轴标签可见
-    yAxis4->setTitleText("最高气温/°C"); // 设置轴标题
+    yAxis4->setTitleText("最低气温/°C"); // 设置轴标题
     chart4->addAxis(yAxis4, Qt::AlignLeft); // 将 y 轴添加到图表的左侧
     series4->attachAxis(yAxis4); // 将 series1 与 y 轴绑定
+    scatterSeries4->attachAxis(yAxis4); // 将散点系列与 y 轴绑定
+    qDebug() << "Updated chart4 y-axis format and title.";
 
     // 刷新图表1显示
     chartview4->update();  // 或者 chartview1->repaint();
-    qDebug() << "Updated chartview1.";
+    qDebug() << "Updated chartview4.";
+
 
 
 
@@ -744,6 +790,28 @@ void datavisualization::updateTooltip4(QPointF point, bool state)
     } else {
         // 鼠标移出散点范围，恢复原始大小
         scatterSeries->setMarkerSize(9); // 设置散点大小为9（原始大小）
+
+        // 隐藏提示信息
+        QToolTip::hideText();
+    }
+}
+
+// 处理折线散点图的悬停信号
+void datavisualization::updateTooltip5(QPointF point, bool state)
+{
+
+    if (state) {
+        // 放大散点
+        scatterSeries4->setMarkerSize(12); // 设置散点大小为10（放大）
+
+        // 格式化提示信息
+        QString tooltip = QString("日期: %1号, 气温: %2°C").arg(point.x()).arg(point.y());
+
+        // 显示提示信息
+        QToolTip::showText(QCursor::pos(), tooltip);
+    } else {
+        // 鼠标移出散点范围，恢复原始大小
+        scatterSeries4->setMarkerSize(9); // 设置散点大小为9（原始大小）
 
         // 隐藏提示信息
         QToolTip::hideText();
