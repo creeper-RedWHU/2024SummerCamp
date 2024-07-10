@@ -490,12 +490,12 @@ void datavisualization::mydraw()
     barset1->setColor(Qt::red);
     barset2->setColor(Qt::blue);
     barset3->setColor(Qt::green);
-    barset4->setColor(Qt::black);
+    barset4->setColor(Qt::darkGreen);
     barset5->setColor(Qt::cyan);
     barset6->setColor(Qt::magenta);
-    barset7->setColor(Qt::yellow);
+    barset7->setColor(Qt::darkYellow);
     barset8->setColor(Qt::darkRed);
-    barset9->setColor(Qt::lightGray);
+    barset9->setColor(Qt::gray);
 
     // 初始化八个风向的风力计数器
     int wind1 = 0;  // 东风
@@ -675,7 +675,7 @@ void datavisualization::updateTooltip1(QPointF point, bool state)
 void datavisualization::updateTooltip2(QPieSlice *slice, bool state)
 {
     if (state && slice) {
-        QString tooltip = QString("饼状图 - %1: %2").arg(slice->label()).arg(slice->value());
+        QString tooltip = QString("%1: %2天").arg(slice->label()).arg(slice->value());
         QToolTip::showText(QCursor::pos(), tooltip);
 
         // 放大当前悬停的扇形
@@ -696,15 +696,33 @@ void datavisualization::updateTooltip2(QPieSlice *slice, bool state)
 }
 
 //处理柱状图
+
 void datavisualization::updateTooltip3(bool hovered, int index, QBarSet* barset)
 {
+    static QColor originalColor; // 使用静态变量来保存原始颜色
+
     if (hovered && barset && index != -1) {
-        QString tooltip = QString("柱状图 - %1: %2").arg(barset->label()).arg(barset->at(index));
+        // 获取柱子的颜色并保存原始颜色
+        if (!originalColor.isValid()) {
+            originalColor = barset->color(); // 只在第一次保存原始颜色
+        }
+
+        // 放大柱子的效果，例如增加柱子的宽度或者修改颜色
+        barset->setColor(originalColor.lighter(150));  // 使用稍亮的颜色
+
+        QString tooltip = QString(" %1: %2天").arg(barset->label()).arg(barset->at(index));
         QToolTip::showText(QCursor::pos(), tooltip);
     } else {
+        // 恢复原始状态
+        if (barset && originalColor.isValid()) {
+            barset->setColor(originalColor);  // 恢复原始颜色
+        }
         QToolTip::hideText();
+        originalColor = QColor(); // 重置原始颜色为无效状态，以便下次重新保存
     }
 }
+
+
 
 
 
