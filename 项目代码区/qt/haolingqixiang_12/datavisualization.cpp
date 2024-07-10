@@ -179,19 +179,19 @@ datavisualization::~datavisualization()
 //连接数据库
 bool datavisualization::connectToDatabase()
 {
-    // db = QSqlDatabase::addDatabase("QMYSQL");
-    // db.setHostName("60.205.232.122");
-    // db.setDatabaseName("data");
-    // db.setUserName("root");
-    // db.setPassword("123456");
-
-    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");// 建立和QSQLITE数据库的连接
-    db.setHostName("127.0.0.1");  //连接本地主机
-    db.setPort(3306);
+    db = QSqlDatabase::addDatabase("QMYSQL");
+    db.setHostName("60.205.232.122");
+    db.setDatabaseName("data");
     db.setUserName("root");
-    //设置数据库的密码
-    db.setPassword("mt127715318");    //这个就是安装MySQL时设置的密码
-    db.setDatabaseName("/Users/motao/demo1.db");//设置数据库名称
+    db.setPassword("QAZ123wsx");
+
+    // QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");// 建立和QSQLITE数据库的连接
+    // db.setHostName("127.0.0.1");  //连接本地主机
+    // db.setPort(3306);
+    // db.setUserName("root");
+    // //设置数据库的密码
+    // db.setPassword("mt127715318");    //这个就是安装MySQL时设置的密码
+    // db.setDatabaseName("/Users/motao/demo1.db");//设置数据库名称
 
     if (!db.open()) {
         qDebug() << "Database error occurred:" << db.lastError();
@@ -817,6 +817,3 @@ void datavisualization::updateTooltip5(QPointF point, bool state)
         QToolTip::hideText();
     }
 }
-
-
-
