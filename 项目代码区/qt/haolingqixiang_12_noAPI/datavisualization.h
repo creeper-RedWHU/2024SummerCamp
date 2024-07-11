@@ -28,13 +28,15 @@ public:
     explicit datavisualization(QWidget *parent = nullptr);
     ~datavisualization();
 
-    QLineSeries *series1;  //数据系列
-    QLineSeries *series4;  //数据系列
+    QLineSeries *series1;  //数据系列最高气温
     QPieSeries *series2;  //数据系列
     QBarSeries *series3;  //数据系列
+    QLineSeries *series4;  //数据系列最低气温
+    QLineSeries *series5;  //数据系列温差温差
 
-    QScatterSeries *scatterSeries;
-    QScatterSeries *scatterSeries4;
+    QScatterSeries *scatterSeries1;//最高气温
+    QScatterSeries *scatterSeries4;//最低气温
+    QScatterSeries *scatterSeries5;//温差
 
     QBarSet* barset1;  //柱状图的"柱"
     QBarSet* barset2;
@@ -73,6 +75,7 @@ public:
     void updateTooltip3(bool hovered, int index, QBarSet* barset);
     void updateTooltip4(QPointF point, bool state);
     void updateTooltip5(QPointF point, bool state);
+    void updateTooltip6(QPointF point, bool state);
     bool connectToDatabase();
 
 

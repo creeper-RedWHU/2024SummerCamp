@@ -22,6 +22,9 @@ forecast::forecast(QWidget *parent)
     cityBox->addItem("武汉");
     cityBox->addItem("北京");
     cityBox->addItem("上海");
+    cityBox->addItem("长沙");
+    cityBox->addItem("南京");
+    cityBox->addItem("杭州");
     buttonLayout->addWidget(cityBox);
 
     // 创建预测按钮
