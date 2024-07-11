@@ -2,17 +2,16 @@ import re
 import string
 from urllib.parse import quote
 import pymysql
+import numpy as np
 import urllib.request, urllib.error
 import json
 import multiprocessing
 import requests
 from bs4 import BeautifulSoup
 import time
-
-import ssl
-
-ssl._create_default_https_context = ssl._create_unverified_context
-
+import datetime
+import os
+import cv2
 '''
 数据库标准说明：
 MySQL型数据库
@@ -34,6 +33,9 @@ users:user_name TEXT,password TEXT,identity INT
     参数说明：城市名字
     应用场景说明：Qt端每次查询某一个城市最近24小时的数据先调用这个函数
     功能说明：爬取过去24小时的温度和空气质量，每次爬取前清除数据
+    
+4.void fetch12future(string ct)
+
 '''
 
 '''
@@ -54,9 +56,11 @@ cityList = {"长沙": "changsha", "武汉": "wuhan", "北京": "beijing", "杭�
             "南京": "nanjing"}
 findLinkDate = re.compile(r'<div class="th200">(.*?)</div>')
 findDataEach = re.compile(r'<div class="th140">(.*?)</div>')
-findHoursData = re.compile(r'<tr>(.*?)</tr>',re.S)
-findHoursDataSec=re.compile(r'<td class="text-center">(.*?)</td>',re.S)
+findHoursData = re.compile(r'<tr>(.*?)</tr>', re.S)
+findHoursDataSec = re.compile(r'<td class="text-center">(.*?)</td>', re.S)
+findHoursDataThird = re.compile(r'<td>(.*?)</td>', re.S)
 dateMax = {1: 31, 2: 28, 3: 31, 4: 30, 5: 31, 6: 30, 7: 31, 8: 31, 9: 30, 10: 31, 11: 30, 12: 31, 20: 29}
+cityToProvince = {"北京": "54511", "武汉": "57494", "杭州": "58457"}
 
 
 def getURL(address, year, month):
@@ -95,15 +99,17 @@ def toint(s):
         return int(s[1])
     return int(s)
 
+
 def getdouble(s):
-    a=0
+    a = 0
     for i in range(len(s)):
-        if s[i]=='.':
-            a+=int(s[i+1])*0.1
+        if s[i] == '.':
+            a += int(s[i + 1]) * 0.1
             return a
         else:
-            a=a*10+int(s[i])
+            a = a * 10 + int(s[i])
     return a
+
 
 def get_data(url, city, year, month):
     html = askURL(url)
@@ -177,7 +183,6 @@ def update(ct, startYear, endYear, startMonth, endMonth):
 
 
 def whetherhas(ct, year, month):
-
     '''
     conn = pymysql.connect(
         host='localhost',
@@ -248,6 +253,66 @@ def fetchData(ct, startYear, endYear, startMonth, endMonth):
                     time.sleep(1)
 
 
+def topower(s):
+    a = 0
+    for i in range(len(s)):
+        if s[i] == '.':
+            a += int(s[i + 1]) * 0.1
+            break
+        elif s[i] == 'm':
+            break
+        else:
+            a = a * 10 + int(s[i])
+    if a <= 0.2:
+        return 0
+    elif a <= 1.5:
+        return 1
+    elif a <= 3.3:
+        return 2
+    elif a <= 5.4:
+        return 3
+    elif a <= 7.9:
+        return 4
+    elif a <= 10.7:
+        return 5
+    elif a <= 13.8:
+        return 6
+    elif a <= 17.1:
+        return 7
+    elif a <= 20.7:
+        return 8
+    elif a <= 24.4:
+        return 9
+    elif a <= 28.4:
+        return 10
+    elif a <= 32.6:
+        return 11
+    else:
+        return 12
+
+def toweather(url):
+    pic=requests.get(url)
+    file_name='tmp.png'
+    with open(file_name, 'wb') as f:
+        f.write(pic.content)
+    address='D:\\pythonProject'
+    target=''
+    for target in os.listdir(address):
+        if target[-3:]!="png" or target=="tmp.png":
+            continue
+        file1=target
+        file2=file_name
+        image1=cv2.imread(file1)
+        image2=cv2.imread(file2)
+        difference=cv2.subtract(image1, image2)
+        result = not np.any(difference)
+        if result:
+            break
+
+    file_name="tmp.png"
+    os.remove(file_name)
+    diction={"yintian":"阴天",'cloudy':"多云",'midrain':'中雨','heavy_rain':"暴雨",'smallrain':'小雨','sometimesrain':'阵雨','summer':"晴天","thunder_rain":'雷阵雨'}
+    return diction[target[:target.__len__()-4]]
 # GetDataByHours:获得过去24小时温度数据
 # 思路：先获得逐小时天气预报数据，然后插值法扩充数据，最后再用线性拟合/多项式拟合
 def GetDataByHours(ct):
@@ -259,36 +324,86 @@ def GetDataByHours(ct):
         password='zhoujin@MySQL',
         charset='utf8',
         database="data"
-    )'''
+    )
+    '''
     conn = pymysql.connect(
         host='60.205.232.122',
         port=3306,
         user='root',
-        password='123456',
+        password='QAZ123wsx',
         charset='utf8',
         database="data"
     )
+    '共用数据表：hours_data'
+    '数据项：(城市，月，日，小时，温度，湿度，天气，风向，风力)'
+    'past 12 hours data'
 
     url = "https://datashareclub.com/area/"
-    province = {"武汉": "湖北", "杭州": "浙江","长沙":"湖南","北京":"北京","上海":"上海","南京":"江苏"}
+    province = {"武汉": "湖北", "杭州": "浙江", "长沙": "湖南", "北京": "北京", "上海": "上海", "南京": "江苏"}
     url += province[ct] + '/' + ct + '.html'
     url = quote(url, safe=string.printable)
     html = askURL(url)
     cursor = conn.cursor()
     soup = BeautifulSoup(html, "html.parser")
-    sql="truncate table future_hours_weather"
+    sql = "truncate table hours_data"
     cursor.execute(sql)
     conn.commit()
+
     for item in soup.find('tbody'):
         item = str(item)
         lst = re.findall(findHoursData, item)
         for itemSec in lst:
-            lstSec=re.findall(findHoursDataSec,str(itemSec))
-            sql = "INSERT INTO future_hours_weather(hour,month,day,temperature,air_quality) VALUES (%d,%d,%d,%f,%d)"
-            dats=(toint(lstSec[1][14:16]),toint(lstSec[1][0:2]),toint(lstSec[1][3:5]),getdouble(lstSec[3][:(lstSec[3].__len__()-1)]),int(lstSec[10]))
-            sql%=dats
+            lstSec = re.findall(findHoursDataSec, str(itemSec))
+            sql = "INSERT INTO hours_data(month,day,hour,temperature,humidity,weather,wind_direction,wind_power) VALUES (%d,%d,%d,%f,\'%s\',\'%s\',\'%s\',\'%s\')"
+            month = toint(lstSec[1][0:2])
+            day = toint(lstSec[1][3:5])
+            hour = toint(lstSec[1][14:16])
+            temperature = getdouble(lstSec[3][:(lstSec[3].__len__() - 1)])
+            humidity = lstSec[9]
+            weather = lstSec[2]
+            wind_direction = lstSec[5]
+            wind_power = lstSec[6]
+            dats = (month, day, hour, temperature, humidity, weather, wind_direction, wind_power)
+            sql %= dats
             cursor.execute(sql)
             conn.commit()
+    'future'
+
+    url = "https://weather.cma.cn/web/weather/"
+    url += cityToProvince[ct] + '.html'
+    html = askURL(url)
+    soup = BeautifulSoup(html, "html.parser")
+    url = "https://weather.cma.cn"
+    datum = []
+    weatherlst = soup.find_all('td', class_='wicon')
+    weatherData = []
+    for item in soup.find('table', class_="hour-table"):
+        item = str(item)
+        lst = re.findall(findHoursDataThird, item)
+        id=0
+        if len(lst):
+            for i in range(8):
+
+                if datum.__len__():
+                    if toint(lst[i][:2])<datum[-1][1]:
+                        id=1
+                datum.append([id, toint(lst[i][:2]),getdouble(lst[i+8*1]), lst[i + 8 * 6][:lst[i + 8 * 6].__len__()],
+                                  lst[i + 8 * 4][:lst[i + 8 * 4].__len__()],
+                                  str(topower(lst[i + 8 * 3][:lst[i + 8 * 3].__len__()])) + '级'])
+    for i in range(8):
+        url_add = str(weatherlst[i])[28:len(str(weatherlst[i]))-8]
+        url_add=url+url_add
+        weatherData.append(toweather(url_add))
+    for i in range(8):
+        day=datetime.datetime.today()+datetime.timedelta(datum[i][0])
+        month=day.month
+        day=day.day
+        sql = "INSERT INTO hours_data(month,day,hour,temperature,humidity,weather,wind_direction,wind_power) VALUES (%d,%d,%d,%f,\'%s\',\'%s\',\'%s\',\'%s\')"
+        sql%=(month,day,datum[i][1],datum[i][2],datum[i][3],weatherData[i],datum[i][4],datum[i][5])
+        cursor.execute(sql)
+        conn.commit()
+
+    conn.commit()
     cursor.close()
     conn.close()
 
@@ -306,18 +421,12 @@ if __name__ == '__main__':
         print("City ",city,"'s data from",syear,".",smonth,"to",eyear,".",emonth,end='')
         print()
     '''
-
+    '''
     city="长沙"
-<<<<<<< HEAD
     syear=2020
     smonth=5
     eyear=2020
-=======
-    syear=2012
-    smonth=7
-    eyear=2012
->>>>>>> 499f718c4dabde19be8619e0734a26b57adbdda4
     emonth=8
     fetchData(city,syear,eyear,smonth,emonth)
-    ''''''
-    'GetDataByHours("武汉")'
+    '''
+    GetDataByHours("杭州")

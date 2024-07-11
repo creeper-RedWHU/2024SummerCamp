@@ -27,10 +27,10 @@ import keras
 
 def getMaxAverage(city, startYear, startMonth, startday, endYear, endMonth, endday):
     conn = pymysql.connect(
-        host='localhost',
+        host='60.205.232.122',
         port=3306,
         user='root',
-        password='zhoujin@MySQL',
+        password='123456',
         charset='utf8',
         database="data"
     )
@@ -77,10 +77,10 @@ def getMaxAverage(city, startYear, startMonth, startday, endYear, endMonth, endd
 
 def getMinAverage(city, startYear, startMonth, startday, endYear, endMonth, endday):
     conn = pymysql.connect(
-        host='localhost',
+        host='60.205.232.122',
         port=3306,
         user='root',
-        password='zhoujin@MySQL',
+        password='123456',
         charset='utf8',
         database="data"
     )
@@ -127,10 +127,10 @@ def getMinAverage(city, startYear, startMonth, startday, endYear, endMonth, endd
 
 def getAverage(city, startYear, startMonth, startday, endYear, endMonth, endday):
     conn = pymysql.connect(
-        host='localhost',
+        host='60.205.232.122',
         port=3306,
         user='root',
-        password='zhoujin@MySQL',
+        password='123456',
         charset='utf8',
         database="data"
     )
@@ -176,6 +176,16 @@ def getAverage(city, startYear, startMonth, startday, endYear, endMonth, endday)
 
 
 def deeplearning(x_train, y_train, x_val, y_val, x_tar,x_test,y_test):
+    '''
+        conn = pymysql.connect(
+            host='60.205.232.122',
+            port=3306,
+            user='root',
+            password='123456',
+            charset='utf8',
+            database="data"
+        )
+        '''
     conn = pymysql.connect(
         host='localhost',
         port=3306,
@@ -213,68 +223,19 @@ def deeplearning(x_train, y_train, x_val, y_val, x_tar,x_test,y_test):
     return predictions
 
 
-def predictFuture12Hours(ct):
-    GetData.GetDataByHours(ct)
-    conn = pymysql.connect(
-        host='localhost',
-        port=3306,
-        user='root',
-        password='zhoujin@MySQL',
-        charset='utf8',
-        database="data"
-    )
-    cursor = conn.cursor()
-    SQL = "SELECT * FROM future_hours_weather"
-    cursor.execute(SQL)
-    lst = cursor.fetchall()
-    cursor.close()
-    conn.close()
-    times = []
-    air_quality = []
-    temperature = []
-    for item in lst:
-        temperature.append(item[3])
-        air_quality.append(item[4])
-    temperature = temperature[::-1]
-    air_quality = air_quality[::-1]
-    for i in range(24):
-        times.append(i)
-    times = np.array(times)
-    air_quality = np.array(air_quality)
-    temperature = np.array(temperature)
-
-    poly_air = make_interp_spline(times, air_quality)  # 样条插值扩充样本
-    poly_tem = make_interp_spline(times, temperature)
-    x_new = np.linspace(0, 23, num=50)
-    y_new_air = poly_air(x_new)
-    y_new_tem = poly_tem(x_new)
-
-    x_train_temp, x_test_temp, y_train_temp, y_test_temp = train_test_split(x_new, y_new_tem, test_size=0.20,
-                                                                            random_state=42)
-    x_train_temp, x_val_temp, y_train_temp, y_val_temp = train_test_split(x_new, y_new_tem, test_size=0.20,
-                                                                          random_state=42)
-
-    '''
-    loss = history.history['loss']
-    val_loss = history.history['val_loss']
-    mae = history.history['mean_absolute_error']
-    val_mae = history.history['val_mean_absolute_error']
-    # Plot the training and validation loss
-    #plt.plot(loss, label='Training loss')
-    #plt.plot(val_loss, label='Validation loss')
-    '''
-    x_want = []
-    for i in range(24, 48):
-        x_want.append(i)
-    x_want = np.array(x_want)
-    y_want_temp = deeplearning(x_train_temp, y_train_temp, x_val_temp, y_val_temp, x_want,x_test_temp,y_test_temp)
-    print(y_want_temp)
-    plt.scatter(x_want,y_want_temp)
-    plt.legend()
-    plt.show()
 
 
 def predictFuturedays(city,year,month,day):#默认有了fetch的数据,需要两年的
+    '''
+    conn = pymysql.connect(
+        host='60.205.232.122',
+        port=3306,
+        user='root',
+        password='123456',
+        charset='utf8',
+        database="data"
+    )
+    '''
     conn = pymysql.connect(
         host='localhost',
         port=3306,
@@ -311,8 +272,10 @@ def predictFuturedays(city,year,month,day):#默认有了fetch的数据,需要两
     print(x_want)
     y_want_temp = deeplearning(x_train_temp, y_train_temp, x_val_temp, y_val_temp, x_want, x_test_temp, y_test_temp)
     print(y_want_temp)
+    '''
     plt.scatter(x_train_temp,y_train_temp)
-    plt.scatter(x_test_temp, y_test_temp)
+    plt.scatter(x_test_temp, y_test_temp)'''
+    plt.scatter(x_new, y_new_tem)
     plt.scatter(x_want, y_want_temp)
     plt.legend()
     plt.show()
