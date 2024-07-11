@@ -30,8 +30,8 @@ admin::admin(QWidget *parent)
     buttonLayout = new QHBoxLayout();
 
     // 创建功能按钮
-    const char* buttonNames[5] = {"用户", "管理员", "功能3", "功能4", "功能5"};
-    for (int i = 0; i < 5; ++i) {
+    const char* buttonNames[5] = {"用户", "管理员"};
+    for (int i = 0; i < 2; ++i) {
         buttons[i] = new QPushButton(buttonNames[i], this);
         buttons[i]->setFixedHeight(80);
         buttonLayout->addWidget(buttons[i]);
