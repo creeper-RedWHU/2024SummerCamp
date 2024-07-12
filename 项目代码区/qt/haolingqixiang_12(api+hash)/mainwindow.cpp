@@ -4,6 +4,7 @@
 #include "datavisualization.h"
 #include "historyweather.h"
 #include "forecast.h"
+#include "simulation.h""
 #include "admin.h"
 
 MainWindow::MainWindow(int userIdentity, QWidget *parent)
@@ -69,30 +70,34 @@ MainWindow::MainWindow(int userIdentity, QWidget *parent)
     btn2 = new QPushButton("历史天气", this);
     btn3 = new QPushButton("数据分析和可视化", this);
     btn4 = new QPushButton("气温预测", this);
-    btn5 = new QPushButton("管理员界面", this);
+    btn5 = new QPushButton("个人模拟分析",this);
+    btn6 = new QPushButton("管理员界面", this);
 
     btn1->setCheckable(true);
     btn2->setCheckable(true);
     btn3->setCheckable(true);
     btn4->setCheckable(true);
     btn5->setCheckable(true);
+    btn6->setCheckable(true);
 
     btn1->setFixedSize(300, 100);
     btn2->setFixedSize(300, 100);
     btn3->setFixedSize(300, 100);
     btn4->setFixedSize(300, 100);
     btn5->setFixedSize(300, 100);
+    btn6->setFixedSize(300, 100);
 
     QVBoxLayout *btnlayout = new QVBoxLayout;
     btnlayout->addWidget(btn1);
     btnlayout->addWidget(btn2);
     btnlayout->addWidget(btn3);
     btnlayout->addWidget(btn4);
+    btnlayout->addWidget(btn5);
 
     if (userIdentity == 2) {
-        btnlayout->addWidget(btn5);
+        btnlayout->addWidget(btn6);
     } else {
-        btn5->hide();
+        btn6->hide();
     }
 
     stackedwidget = new QStackedWidget(this);
@@ -121,11 +126,17 @@ MainWindow::MainWindow(int userIdentity, QWidget *parent)
     layout4->addWidget(hlabel4);
     stackedwidget->addWidget(page4);
 
-    QWidget *page5 = new admin;
+    QWidget *page5 = new Simulation;
     QLabel *hlabel5 = new QLabel("界面5");
     QVBoxLayout *layout5 = new QVBoxLayout(page5);
     layout5->addWidget(hlabel5);
     stackedwidget->addWidget(page5);
+
+    QWidget *page6 = new admin;
+    QLabel *hlabel6 = new QLabel("界面6");
+    QVBoxLayout *layout6 = new QVBoxLayout(page6);
+    layout5->addWidget(hlabel6);
+    stackedwidget->addWidget(page6);
 
     QHBoxLayout *mainLayout = new QHBoxLayout;
     mainLayout->addLayout(btnlayout);
@@ -156,11 +167,15 @@ MainWindow::MainWindow(int userIdentity, QWidget *parent)
         updateButtonStyles(btn5);
         stackedwidget->setCurrentIndex(4);
     });
+    connect(btn6, &QPushButton::clicked, this, [this]() {
+        updateButtonStyles(btn6);
+        stackedwidget->setCurrentIndex(5);
+    });
 }
 
 void MainWindow::updateButtonStyles(QPushButton *activeButton)
 {
-    QList<QPushButton*> buttons = {btn1, btn2, btn3, btn4, btn5};
+    QList<QPushButton*> buttons = {btn1, btn2, btn3, btn4, btn5, btn6};
     for (QPushButton *btn : buttons) {
         if (btn == activeButton) {
             btn->setChecked(true);

@@ -23,6 +23,7 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     sectionwidget.cpp \
+    simulation.cpp \
     todayweather.cpp
 
 HEADERS += \
@@ -34,6 +35,7 @@ HEADERS += \
     login_register.h \
     mainwindow.h \
     sectionwidget.h \
+    simulation.h \
     todayweather.h
 
 FORMS += \
@@ -44,6 +46,7 @@ FORMS += \
     login_register.ui \
     mainwindow.ui \
     sectionwidget.ui \
+    simulation.ui \
     todayweather.ui
 
 

@@ -27,6 +27,7 @@ public:
     QPushButton *btn3;
     QPushButton *btn4;
     QPushButton *btn5;
+    QPushButton *btn6;
     QVBoxLayout *btnlayout;
 
     QVBoxLayout *layout1;
@@ -34,12 +35,14 @@ public:
     QVBoxLayout *layout3;
     QVBoxLayout *layout4;
     QVBoxLayout *layout5;
+    QVBoxLayout *layout6;
 
     QLabel *hlabel1;
     QLabel *hlabel2;
     QLabel *hlabel3;
     QLabel *hlabel4;
     QLabel *hlabel5;
+    QLabel *hlabel6;
 
     QStackedWidget *stackedwidget;
 
