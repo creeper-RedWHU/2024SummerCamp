@@ -40,7 +40,8 @@ private slots:
     void deleteUser();
     void addAdmin();
     void deleteAdmin();
-    void showDeleteButton(const QModelIndex &index);
+    void resetPassword();
+    void showResetPasswordButton(const QModelIndex &index);
 
 private:
     QVBoxLayout *mainLayout;
@@ -57,11 +58,13 @@ private:
     QSqlTableModel *adminModel;
     QPushButton *deleteUserButton;
     QPushButton *deleteAdminButton;
+    QPushButton *resetPasswordButton;
     QSqlDatabase db;
 
     QModelIndex selectedUserIndex;
     QModelIndex selectedAdminIndex;
 
+    QString hashPassword(const QString &password);
 };
 
 #endif // ADMIN_H

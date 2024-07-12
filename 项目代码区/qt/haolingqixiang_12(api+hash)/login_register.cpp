@@ -137,6 +137,7 @@ void login_register::handleLoginReply()
             QMessageBox::information(this, "登录成功", "欢迎！");
             this->close();
             MainWindow *w = new MainWindow(identity);
+            w->showMaximized();
             w->show();
         }
         else

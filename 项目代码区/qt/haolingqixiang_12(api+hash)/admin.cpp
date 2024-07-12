@@ -1,3 +1,4 @@
+
 #include "admin.h"
 
 #include "database.h"
@@ -65,22 +66,28 @@ admin::admin(QWidget *parent)
     userModel->setTable("haolins");
     userModel->setFilter("identity = 1");
     userModel->select();
+    userModel->removeColumn(1); // 移除 password 列
     userTableView->setModel(userModel);
 
     userTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     userTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
     userTableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    connect(userTableView, &QTableView::clicked, this, &admin::showDeleteButton);
+    connect(userTableView, &QTableView::clicked, this, &admin::showResetPasswordButton);
 
     deleteUserButton = new QPushButton("删除", this);
     deleteUserButton->setVisible(false);
     connect(deleteUserButton, &QPushButton::clicked, this, &admin::deleteUser);
+
+    resetPasswordButton = new QPushButton("重置密码", this);
+    resetPasswordButton->setVisible(false);
+    connect(resetPasswordButton, &QPushButton::clicked, this, &admin::resetPassword);
 
     QPushButton *addUserButton = new QPushButton("添加用户", this);
     connect(addUserButton, &QPushButton::clicked, this, &admin::addUser);
 
     userLayout->addWidget(userTableView);
     userLayout->addWidget(deleteUserButton);
+    userLayout->addWidget(resetPasswordButton);
     userLayout->addWidget(addUserButton);
     stackedWidget->addWidget(userWidget);
 
@@ -93,22 +100,28 @@ admin::admin(QWidget *parent)
     adminModel->setTable("haolins");
     adminModel->setFilter("identity = 2");
     adminModel->select();
+    adminModel->removeColumn(1); // 移除 password 列
     adminTableView->setModel(adminModel);
 
     adminTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     adminTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
     adminTableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    connect(adminTableView, &QTableView::clicked, this, &admin::showDeleteButton);
+    connect(adminTableView, &QTableView::clicked, this, &admin::showResetPasswordButton);
 
     deleteAdminButton = new QPushButton("删除", this);
     deleteAdminButton->setVisible(false);
     connect(deleteAdminButton, &QPushButton::clicked, this, &admin::deleteAdmin);
+
+    resetPasswordButton = new QPushButton("重置密码", this);
+    resetPasswordButton->setVisible(false);
+    connect(resetPasswordButton, &QPushButton::clicked, this, &admin::resetPassword);
 
     QPushButton *addAdminButton = new QPushButton("添加管理员", this);
     connect(addAdminButton, &QPushButton::clicked, this, &admin::addAdmin);
 
     adminLayout->addWidget(adminTableView);
     adminLayout->addWidget(deleteAdminButton);
+    adminLayout->addWidget(resetPasswordButton);
     adminLayout->addWidget(addAdminButton);
     stackedWidget->addWidget(adminWidget);
 
@@ -215,7 +228,7 @@ void admin::addUser()
 
     if (dialog.exec() == QDialog::Accepted) {
         QString account = accountEdit->text();
-        QString password = passwordEdit->text();
+        QString password = hashPassword(passwordEdit->text());
 
         QSqlQuery query;
         query.prepare("INSERT INTO haolins (account, password, identity) VALUES (?, ?, ?)");
@@ -252,6 +265,7 @@ void admin::deleteUser()
         } else {
             userModel->select();
             deleteUserButton->setVisible(false);
+            resetPasswordButton->setVisible(false);
         }
     }
 }
@@ -281,7 +295,7 @@ void admin::addAdmin()
 
     if (dialog.exec() == QDialog::Accepted) {
         QString account = accountEdit->text();
-        QString password = passwordEdit->text();
+        QString password = hashPassword(passwordEdit->text());
 
         QSqlQuery query;
         query.prepare("INSERT INTO haolins (account, password, identity) VALUES (?, ?, ?)");
@@ -327,28 +341,75 @@ void admin::deleteAdmin()
     }
 }
 
-void admin::showDeleteButton(const QModelIndex &index)
+void admin::resetPassword()
+{
+    QModelIndex selectedIndex;
+    if (stackedWidget->currentWidget() == userWidget) {
+        selectedIndex = selectedUserIndex;
+    } else if (stackedWidget->currentWidget() == adminWidget) {
+        selectedIndex = selectedAdminIndex;
+    }
+
+    if (!selectedIndex.isValid()) return;
+
+    int row = selectedIndex.row();
+    QSqlRecord record;
+    if (stackedWidget->currentWidget() == userWidget) {
+        record = userModel->record(row);
+    } else if (stackedWidget->currentWidget() == adminWidget) {
+        record = adminModel->record(row);
+    }
+    QString account = record.value("account").toString();
+
+    QDialog dialog(this);
+    dialog.setWindowTitle("重置密码");
+
+    QFormLayout form(&dialog);
+    form.setLabelAlignment(Qt::AlignRight);
+
+    QLineEdit *passwordEdit = new QLineEdit(&dialog);
+    passwordEdit->setFixedHeight(30);
+    passwordEdit->setEchoMode(QLineEdit::Password);
+
+    form.addRow("新密码:", passwordEdit);
+
+    QDialogButtonBox buttonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &dialog);
+    form.addRow(&buttonBox);
+
+    connect(&buttonBox, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+    connect(&buttonBox, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+
+    if (dialog.exec() == QDialog::Accepted) {
+        QString newPassword = hashPassword(passwordEdit->text());
+
+        QSqlQuery query;
+        query.prepare("UPDATE haolins SET password = ? WHERE account = ?");
+        query.addBindValue(newPassword);
+        query.addBindValue(account);
+
+        if (!query.exec()) {
+            QMessageBox::critical(this, "错误", "重置密码失败: " + query.lastError().text());
+        } else {
+            QMessageBox::information(this, "成功", "密码已成功重置。");
+            resetPasswordButton->setVisible(false);
+        }
+    }
+}
+void admin::showResetPasswordButton(const QModelIndex &index)
 {
     if (stackedWidget->currentWidget() == userWidget) {
         selectedUserIndex = index;
         deleteUserButton->setVisible(true);
+        resetPasswordButton->setVisible(true);
     } else if (stackedWidget->currentWidget() == adminWidget) {
         selectedAdminIndex = index;
         deleteAdminButton->setVisible(true);
+        resetPasswordButton->setVisible(true);
     }
 }
 
-// bool admin::connectToDatabase()
-// {
-//     db = QSqlDatabase::addDatabase("QMYSQL");
-//     db.setHostName("localhost");
-//     db.setDatabaseName("data");
-//     db.setUserName("root");
-//     db.setPassword("123456");
-
-//     if (!db.open()) {
-//         qDebug() << "数据库连接失败: " << db.lastError().text();
-//         return false;
-//     }
-//     return true;
-// }
+QString admin::hashPassword(const QString &password)
+{
+    QByteArray hash = QCryptographicHash::hash(password.toUtf8(), QCryptographicHash::Sha256);
+    return QString(hash.toHex());
+}
