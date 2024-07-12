@@ -38,6 +38,10 @@ public:
     QScatterSeries *scatterSeries4;//最低气温
     QScatterSeries *scatterSeries5;//温差
 
+    QStackedWidget *stackedWidget;
+
+
+
     QBarSet* barset1;  //柱状图的"柱"
     QBarSet* barset2;
     QBarSet* barset3;
@@ -47,6 +51,16 @@ public:
     QBarSet* barset7;
     QBarSet* barset8;
     QBarSet* barset9;
+
+    //设置四个按钮
+    QPushButton* btn1;
+    QPushButton* btn2;
+    QPushButton* btn3;
+    QPushButton* btn4;
+    QPushButton* btn5;
+
+    QLabel *  infoLabel;
+
 
 
 
@@ -77,7 +91,11 @@ public:
     void updateTooltip5(QPointF point, bool state);
     void updateTooltip6(QPointF point, bool state);
     bool connectToDatabase();
-
+    void updateChartAndLabel(QChartView *chartview, const QString &text);
+    void btn1onclicked();
+    void btn2onclicked();
+    void btn3onclicked();
+    void btn4onclicked();
 
 
 

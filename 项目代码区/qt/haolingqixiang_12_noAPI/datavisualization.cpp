@@ -3,7 +3,6 @@
 #include <QtCharts>
 #include <QDebug>
 
-
 datavisualization::datavisualization(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::datavisualization)
@@ -11,46 +10,53 @@ datavisualization::datavisualization(QWidget *parent)
     ui->setupUi(this);
 
     connectToDatabase();
-    //先连接数据库
+    // 先连接数据库
     if (!connectToDatabase()) {
         QMessageBox::critical(this, "数据库连接失败", "数据可视化界面：无法连接到数据库，请检查配置。");
-    }
-    else
-    {
-        qDebug()<<"数据可视化界面界面成功连接数据库";
+    } else {
+        qDebug() << "数据可视化界面界面成功连接数据库";
     }
 
     QHBoxLayout *controlLayout = new QHBoxLayout();
 
     cityComboBox = new QComboBox(this);
-    cityComboBox->addItems({"北京", "上海", "长沙","南京","杭州","武汉"});
-    controlLayout->addWidget(new QLabel("选择城市:", this));
-    controlLayout->addWidget(cityComboBox);
+    cityComboBox->addItems({"北京", "上海", "长沙", "南京", "杭州", "武汉"});
+    QHBoxLayout *cityLayout = new QHBoxLayout();
+    cityLayout->addWidget(new QLabel("选择城市:", this));
+    cityLayout->addWidget(cityComboBox);
+    controlLayout->addLayout(cityLayout);
 
     YearComboBox = new QComboBox(this);
-    YearComboBox->addItems({"2011","2012","2013","2014","2015","2016","2017","2018","2019","2020", "2021", "2022","2023","2024"});
-    controlLayout->addWidget(new QLabel("选择年份:", this));
-    controlLayout->addWidget(YearComboBox);
+    YearComboBox->addItems({"2011", "2012", "2013", "2014", "2015", "2016", "2017", "2018", "2019", "2020", "2021", "2022", "2023", "2024"});
+    QHBoxLayout *yearLayout = new QHBoxLayout();
+    yearLayout->addWidget(new QLabel("选择年份:", this));
+    yearLayout->addWidget(YearComboBox);
+    controlLayout->addLayout(yearLayout);
 
     MonthComboBox = new QComboBox(this);
-    MonthComboBox->addItems({"1","2","3","4","5","6","7","8","9","10","11","12"});
-    controlLayout->addWidget(new QLabel("选择月份:", this));
-    controlLayout->addWidget(MonthComboBox);
+    MonthComboBox->addItems({"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"});
+    QHBoxLayout *monthLayout = new QHBoxLayout();
+    monthLayout->addWidget(new QLabel("选择月份:", this));
+    monthLayout->addWidget(MonthComboBox);
+    controlLayout->addLayout(monthLayout);
 
     startDayComboBox = new QComboBox(this);
-    startDayComboBox->addItems({"1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31"});
-    controlLayout->addWidget(new QLabel("选择起始日期:", this));
-    controlLayout->addWidget(startDayComboBox);
+    startDayComboBox->addItems({"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31"});
+    QHBoxLayout *startDayLayout = new QHBoxLayout();
+    startDayLayout->addWidget(new QLabel("选择起始日期:", this));
+    startDayLayout->addWidget(startDayComboBox);
+    controlLayout->addLayout(startDayLayout);
 
     endDayComboBox = new QComboBox(this);
-    endDayComboBox->addItems({"1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31"});
-    controlLayout->addWidget(new QLabel("选择中止日期:", this));
-    controlLayout->addWidget(endDayComboBox);
+    endDayComboBox->addItems({"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31"});
+    QHBoxLayout *endDayLayout = new QHBoxLayout();
+    endDayLayout->addWidget(new QLabel("选择中止日期:", this));
+    endDayLayout->addWidget(endDayComboBox);
+    controlLayout->addLayout(endDayLayout);
 
     QPushButton *drawButton = new QPushButton("绘制", this);
     controlLayout->addWidget(drawButton);
     connect(drawButton, &QPushButton::clicked, this, &datavisualization::onDrawButtonClicked);  // Modify this line
-
 
     setStyleSheet(R"(
         QWidget {
@@ -88,20 +94,14 @@ datavisualization::datavisualization(QWidget *parent)
         }
     )");
 
-
-
-
-
-    series1 = new QLineSeries;//最高气温折线
-    series4 = new QLineSeries;//最低气温折线
-    series2 = new QPieSeries;//天气饼状图
-    series3 = new QBarSeries;//风向柱状图
-    series5 = new QLineSeries;//温差折线
-    scatterSeries1 = new QScatterSeries();//最高气温散点
-    scatterSeries4 = new QScatterSeries();//最低气温散点
-    scatterSeries5 = new QScatterSeries();//温差
-
-
+    series1 = new QLineSeries; // 最高气温折线
+    series4 = new QLineSeries; // 最低气温折线
+    series2 = new QPieSeries; // 天气饼状图
+    series3 = new QBarSeries; // 风向柱状图
+    series5 = new QLineSeries; // 温差折线
+    scatterSeries1 = new QScatterSeries(); // 最高气温散点
+    scatterSeries4 = new QScatterSeries(); // 最低气温散点
+    scatterSeries5 = new QScatterSeries(); // 温差
 
     // 创建图表并添加数据系列
     chart1 = new QChart();
@@ -112,7 +112,7 @@ datavisualization::datavisualization(QWidget *parent)
 
     chart4 = new QChart();
     chart4->legend()->hide();
-    //chart4->addSeries(series5);
+    chart4->addSeries(series5);
     chart4->createDefaultAxes();
     chart4->setTitle("温差折线图");
 
@@ -127,7 +127,6 @@ datavisualization::datavisualization(QWidget *parent)
     chart3->addSeries(series3);
     chart3->createDefaultAxes();
     chart3->setTitle("风向柱状图");
-
 
     // 创建图表视图并设置渲染提示
     chartview1 = new QChartView(chart1);
@@ -149,33 +148,252 @@ datavisualization::datavisualization(QWidget *parent)
     connect(scatterSeries4, &QScatterSeries::hovered, this, &datavisualization::updateTooltip5);
     connect(scatterSeries5, &QScatterSeries::hovered, this, &datavisualization::updateTooltip6);
 
+    // 添加四个按钮
+    btn1 = new QPushButton("气温分析", this);
+    btn2 = new QPushButton("温差分析", this);
+    btn3 = new QPushButton("天气分析", this);
+    btn4 = new QPushButton("风向分析", this);
+
+    // 设置新的按钮垂直布局
+    QVBoxLayout *btnlayout = new QVBoxLayout;
+    btnlayout->addWidget(btn1);
+    btnlayout->addWidget(btn2);
+    btnlayout->addWidget(btn3);
+    btnlayout->addWidget(btn4);
+
+    // 设置图表布局
+    stackedWidget = new QStackedWidget(this);
+    stackedWidget->addWidget(chartview1);
+    stackedWidget->addWidget(chartview2);
+    stackedWidget->addWidget(chartview3);
+    stackedWidget->addWidget(chartview4);
+
+    // 添加 QLabel 到图表布局下面
+    infoLabel = new QLabel("这是一些描述文本。", this);  // Make infoLabel a member variable
+
+    // 连接按钮点击事件与图表切换和 Qlabel 内容修改
+    connect(btn1, &QPushButton::clicked, this, &datavisualization::btn1onclicked);
+    connect(btn2, &QPushButton::clicked, this, &datavisualization::btn2onclicked);
+    connect(btn3, &QPushButton::clicked, this, &datavisualization::btn3onclicked);
+    connect(btn4, &QPushButton::clicked, this, &datavisualization::btn4onclicked);
+
+    connect(drawButton, &QPushButton::clicked, this, &datavisualization::btn2onclicked);
+    connect(drawButton, &QPushButton::clicked, this, &datavisualization::btn3onclicked);
+    connect(drawButton, &QPushButton::clicked, this, &datavisualization::btn4onclicked);
+    connect(drawButton, &QPushButton::clicked, this, &datavisualization::btn1onclicked);
 
 
     // 布局设置
-    QHBoxLayout *hlayout1 = new QHBoxLayout;
-    hlayout1->addWidget(chartview1);
-    hlayout1->addWidget(chartview4);
+    QHBoxLayout *mainLayout = new QHBoxLayout;
+    mainLayout->addLayout(btnlayout);
+    QVBoxLayout *chartLayout = new QVBoxLayout;  // Create a new layout for chart and label
+    chartLayout->addWidget(stackedWidget);
+    chartLayout->addWidget(infoLabel);
+    mainLayout->addLayout(chartLayout);  // Add the new layout to the main layout
+    infoLabel->setText(" ");
 
-    QHBoxLayout *hlayout2 = new QHBoxLayout;
-    hlayout2->addWidget(chartview2);
-    hlayout2->addWidget(chartview3);
 
     QVBoxLayout *vlayout = new QVBoxLayout;
     vlayout->addLayout(controlLayout);
-    vlayout->addLayout(hlayout1);
-    vlayout->addLayout(hlayout2);
+    vlayout->addLayout(mainLayout);
 
-
-    this->setLayout(nullptr);
-    this->setLayout(vlayout);
-
-
+    setLayout(vlayout);
 }
+
+void datavisualization::updateChartAndLabel(QChartView *chartview, const QString &text) {
+    stackedWidget->setCurrentWidget(chartview);
+    infoLabel->setText(text);
+}
+
 
 datavisualization::~datavisualization()
 {
     delete ui;
 
+}
+void datavisualization::btn1onclicked()
+{
+    QString Qcity = cityComboBox->currentText();
+    int Qyear = YearComboBox->currentText().toInt();
+    int Qmonth = MonthComboBox->currentText().toInt();
+    int Qstartday = startDayComboBox->currentText().toInt();
+    int Qendday = endDayComboBox->currentText().toInt();
+
+    QSqlQuery query;  // 使用现有的数据库连接
+    query.prepare("SELECT day,max_temperature,min_temperature FROM climate WHERE city = :city AND year = :year AND month = :month AND day <= :eday AND day >= :sday");
+    query.bindValue(":city", Qcity);
+    query.bindValue(":year", Qyear);
+    query.bindValue(":month", Qmonth);
+    query.bindValue(":sday", Qstartday);
+    query.bindValue(":eday", Qendday);
+
+    if (!query.exec()) {
+        qDebug() << "Query execution failed:" << query.lastError().text();
+    }
+
+    int maxtem_max = -100; // 最高气温的最高值
+    QString maxtem_max_days; // 最高气温的最高值对应的日期（多个日期）
+    int maxtem_min = 100; // 最高气温的最低值
+    QString maxtem_min_days; // 最高气温的最低值对应的日期（多个日期）
+    int mintem_max = -100; // 最低气温的最高值
+    QString mintem_max_days; // 最低气温的最高值对应的日期（多个日期）
+    int mintem_min = 100; // 最低气温的最低值
+    QString mintem_min_days; // 最低气温的最低值对应的日期（多个日期）
+    int total_max_temperature = 0; // 总最高气温
+    int total_min_temperature = 0; // 总最低气温
+    int count = 0; // 计数器，用于统计数据数量
+
+    while (query.next()) {
+        int day = query.value("day").toInt(); // 获取天数
+        int y1_value = query.value("max_temperature").toInt();
+        int y2_value = query.value("min_temperature").toInt();
+
+        // 更新最高气温的最高值及其对应日期
+        if (y1_value > maxtem_max) {
+            maxtem_max = y1_value;
+            maxtem_max_days = QString::number(day);
+        } else if (y1_value == maxtem_max) {
+            maxtem_max_days += ", " + QString::number(day);
+        }
+
+        // 更新最高气温的最低值及其对应日期
+        if (y1_value < maxtem_min) {
+            maxtem_min = y1_value;
+            maxtem_min_days = QString::number(day);
+        } else if (y1_value == maxtem_min) {
+            maxtem_min_days += ", " + QString::number(day);
+        }
+
+        // 更新最低气温的最高值及其对应日期
+        if (y2_value > mintem_max) {
+            mintem_max = y2_value;
+            mintem_max_days = QString::number(day);
+        } else if (y2_value == mintem_max) {
+            mintem_max_days += ", " + QString::number(day);
+        }
+
+        // 更新最低气温的最低值及其对应日期
+        if (y2_value < mintem_min) {
+            mintem_min = y2_value;
+            mintem_min_days = QString::number(day);
+        } else if (y2_value == mintem_min) {
+            mintem_min_days += ", " + QString::number(day);
+        }
+
+        // 累加总最高气温和总最低气温
+        total_max_temperature += y1_value;
+        total_min_temperature += y2_value;
+        count++;
+    }
+
+    // 计算平均最高气温和平均最低气温
+    double average_max_temperature = static_cast<double>(total_max_temperature) / count;
+    double average_min_temperature = static_cast<double>(total_min_temperature) / count;
+
+    // 构建显示文本
+    QString labelText1 = Qcity + "市" + QString::number(Qyear) + "年" + QString::number(Qmonth) + "月" + QString::number(Qstartday) + "日" + "～" + QString::number(Qendday) + "日气温数据分析：\n"
+                         + "最高气温的最高值为 " + QString::number(maxtem_max) + "°C，出现在" + maxtem_max_days + "日\n"
+                         + "最高气温的最低值为 " + QString::number(maxtem_min) + "°C，出现在" + maxtem_min_days + "日\n"
+                         + "最低气温的最高值为 " + QString::number(mintem_max) + "°C，出现在" + mintem_max_days + "日\n"
+                         + "最低气温的最低值为 " + QString::number(mintem_min) + "°C，出现在" + mintem_min_days + "日\n"
+                         + "平均最高气温为 " + QString::number(average_max_temperature, 'f', 2) + "°C；"+ "平均最低气温为 " + QString::number(average_min_temperature, 'f', 2) + "°C\n";
+
+    updateChartAndLabel(chartview1, labelText1);
+
+
+
+}
+void datavisualization::btn2onclicked()
+{
+
+
+    QString Qcity = cityComboBox->currentText();
+    int Qyear = YearComboBox->currentText().toInt();
+    int Qmonth = MonthComboBox->currentText().toInt();
+    int Qstartday = startDayComboBox->currentText().toInt();
+    int Qendday = endDayComboBox->currentText().toInt();
+
+    QSqlQuery query;
+    query.prepare("SELECT day, max_temperature, min_temperature FROM climate WHERE city = :city AND year = :year AND month = :month AND day <= :eday AND day >= :sday");
+    query.bindValue(":city", Qcity);
+    query.bindValue(":year", Qyear);
+    query.bindValue(":month", Qmonth);
+    query.bindValue(":sday", Qstartday);
+    query.bindValue(":eday", Qendday);
+    query.exec();
+
+    // 初始化变量用于计算温差和日期
+    double maxTempDiff = -std::numeric_limits<double>::infinity();
+    double minTempDiff = std::numeric_limits<double>::infinity();
+    QString maxTempDates;
+    QString minTempDates;
+    double totalTempDiff = 0.0;
+    int count = 0;
+
+    // 遍历查询结果
+    while (query.next()) {
+        int day = query.value(0).toInt();
+        double maxTemp = query.value(1).toDouble();
+        double minTemp = query.value(2).toDouble();
+
+        double tempDiff = maxTemp - minTemp;
+
+        // 计算最高温差和对应日期
+        if (tempDiff > maxTempDiff) {
+            maxTempDiff = tempDiff;
+            maxTempDates = QString::number(day);
+        } else if (tempDiff == maxTempDiff) {
+            maxTempDates += ", " + QString::number(day);
+        }
+
+        // 计算最低温差和对应日期
+        if (tempDiff < minTempDiff) {
+            minTempDiff = tempDiff;
+            minTempDates = QString::number(day);
+        } else if (tempDiff == minTempDiff) {
+            minTempDates += ", " + QString::number(day);
+        }
+
+        // 累加温差，用于计算平均值
+        totalTempDiff += tempDiff;
+        count++;
+    }
+
+    // 计算平均温差
+    double averageTempDiff = totalTempDiff / count;
+
+    // 构建最终的文本信息
+    QString labelText4 = Qcity + "市" + QString::number(Qyear) + "年" + QString::number(Qmonth) + "月" + QString::number(Qstartday) + "～" + QString::number(Qendday) + "日温差数据分析：\n";
+    labelText4 += "最高温差为" + QString::number(maxTempDiff) + " °C，出现在 " + maxTempDates + "日\n";
+    labelText4 += "最低温差为" + QString::number(minTempDiff) + " °C，出现在 " + minTempDates + "日\n";
+    labelText4 += "平均温差为" + QString::number(averageTempDiff) + " °C";
+
+
+
+   updateChartAndLabel(chartview4, labelText4);
+}
+void datavisualization::btn3onclicked()
+{
+    QString Qcity = cityComboBox->currentText();
+    int Qyear = YearComboBox->currentText().toInt();
+    int Qmonth = MonthComboBox->currentText().toInt();
+    int Qstartday = startDayComboBox->currentText().toInt();
+    int Qendday = endDayComboBox->currentText().toInt();
+
+    QString labelText2=Qcity + "市" + QString::number(Qyear) + "年" + QString::number(Qmonth) + "月"+ QString::number(Qstartday) + "～" + QString::number(Qendday) + "日天气分析：\n";
+    updateChartAndLabel(chartview2, labelText2);
+}
+void datavisualization::btn4onclicked()
+{
+    QString Qcity = cityComboBox->currentText();
+    int Qyear = YearComboBox->currentText().toInt();
+    int Qmonth = MonthComboBox->currentText().toInt();
+    int Qstartday = startDayComboBox->currentText().toInt();
+    int Qendday = endDayComboBox->currentText().toInt();
+
+    QString labelText3=Qcity + "市" + QString::number(Qyear) + "年" + QString::number(Qmonth) + "月"+ QString::number(Qstartday) + "～" + QString::number(Qendday) + "日风向分析：\n";
+
+    updateChartAndLabel(chartview3, labelText3);
 }
 
 //连接数据库
@@ -215,18 +433,20 @@ void datavisualization::onDrawButtonClicked() {
     mydraw();
 }
 
+
+
+
 //根据数据绘制图表
 void datavisualization::mydraw()
 {
     connectToDatabase();
+
 
     QString Qcity = cityComboBox->currentText();
     int Qyear = YearComboBox->currentText().toInt();
     int Qmonth = MonthComboBox->currentText().toInt();
     int Qstartday = startDayComboBox->currentText().toInt();
     int Qendday = endDayComboBox->currentText().toInt();
-
-
 
     // 查询数据库获取最高气温数据
     QSqlQuery query;  // 使用现有的数据库连接
@@ -240,6 +460,7 @@ void datavisualization::mydraw()
     if (!query.exec()) {
         qDebug() << "Query execution failed:" << query.lastError().text();
     }
+
 
 
     // 清空原有数据
@@ -365,7 +586,6 @@ void datavisualization::mydraw()
     // 刷新图表1显示
     chartview1->update();  // 或者 chartview1->repaint();
     qDebug() << "Updated chartview1.";
-
 
 
 
