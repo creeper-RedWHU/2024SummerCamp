@@ -1,0 +1,16 @@
+<RCC>
+    <qresource prefix="/">
+        <file>weatherp/heavy_rain.png</file>
+        <file>weatherp/little_rain.png</file>
+        <file>weatherp/moderate_rain_and_shower.png</file>
+        <file>weatherp/overcast.png</file>
+        <file>weatherp/partly_cloudy.png</file>
+        <file>weatherp/sunny.png</file>
+        <file>weatherp/thunderstorm.png</file>
+        <file>lifep/clothes.png</file>
+        <file>lifep/cold.png</file>
+        <file>lifep/sports.png</file>
+        <file>lifep/umbra_closed.png</file>
+        <file>lifep/unbra_open.png</file>
+    </qresource>
+</RCC>
