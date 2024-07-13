@@ -118,15 +118,13 @@ Simulation::~Simulation()
 
 void Simulation::draw()
 {
-
-    // ！！！待修改！！！
-
-
+    //已修改
+    
     // 查询数据库获取最高气温数据
     QSqlQuery query;  // 使用现有的数据库连接
 
     //需要修改climate为后续创建的表
-    query.prepare("SELECT day,max_temperature,min_temperature FROM climate");
+    query.prepare("SELECT time,temperature FROM anolog_data");
 
 
     if (!query.exec()) {
