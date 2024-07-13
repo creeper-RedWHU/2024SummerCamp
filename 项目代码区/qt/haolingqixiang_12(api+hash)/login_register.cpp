@@ -1,6 +1,7 @@
 #include "login_register.h"
 #include "ui_login_register.h"
 #include "mainwindow.h"
+#include "regis.h"
 #include <QCryptographicHash>
 
 login_register::login_register(QWidget *parent)
@@ -156,60 +157,64 @@ void login_register::handleLoginReply()
 
 void login_register::on_registerButton_clicked()
 {
-    QString account = le1->text();
-    QString password = le2->text();
+    this->close();
+    regis *w = new regis();
+    w->show();
 
-    if (account.isEmpty() || password.isEmpty()) {
-        QMessageBox::warning(this, "注册失败", "账号或密码不能为空，请重试。");
-        return;
-    }
+    // QString account = le1->text();
+    // QString password = le2->text();
 
-    QByteArray hash = QCryptographicHash::hash(password.toUtf8(), QCryptographicHash::Sha256);
-    QString hashedPassword = QString(hash.toHex());
+    // if (account.isEmpty() || password.isEmpty()) {
+    //     QMessageBox::warning(this, "注册失败", "账号或密码不能为空，请重试。");
+    //     return;
+    // }
 
-    QNetworkRequest request(QUrl("http://60.205.232.122:5000/register"));
-    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+    // QByteArray hash = QCryptographicHash::hash(password.toUtf8(), QCryptographicHash::Sha256);
+    // QString hashedPassword = QString(hash.toHex());
 
-    QJsonObject json;
-    json["account"] = account;
-    json["password"] = hashedPassword;
+    // QNetworkRequest request(QUrl("http://60.205.232.122:5000/register"));
+    // request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
 
-    QNetworkReply* reply = networkManager->post(request, QJsonDocument(json).toJson());
-    connect(reply, &QNetworkReply::finished, this, &login_register::handleRegisterReply);
+    // QJsonObject json;
+    // json["account"] = account;
+    // json["password"] = hashedPassword;
+
+    // QNetworkReply* reply = networkManager->post(request, QJsonDocument(json).toJson());
+    // connect(reply, &QNetworkReply::finished, this, &login_register::handleRegisterReply);
 }
 
-void login_register::handleRegisterReply()
-{
-    QNetworkReply* reply = qobject_cast<QNetworkReply*>(sender());
-    if (reply->error() == QNetworkReply::NoError)
-    {
-        QJsonDocument jsonResponse = QJsonDocument::fromJson(reply->readAll());
-        QJsonObject jsonObject = jsonResponse.object();
-        bool success = jsonObject["success"].toBool();
-        if (success)
-        {
-            QMessageBox::information(this, "注册成功", "请登录！");
-        }
-        else
-        {
-            QString errorMessage = jsonObject["error_message"].toString();
-            QMessageBox::warning(this, "注册失败", "请更换账号重新注册！" + errorMessage);
-        }
-    }
-    else
-    {
-        QString errorString = reply->errorString();
-        if(errorString == "Error transferring http://60.205.232.122:5000/register - server replied: INTERNAL SERVER ERROR")
-        {
-            QMessageBox::warning(this, "注册失败", "该账号已存在");
-        }
-        else
-        {
-            QMessageBox::warning(this, "注册失败", "网络错误，请重试。错误信息：" + errorString);
-        }
-    }
-    reply->deleteLater();
-}
+// void login_register::handleRegisterReply()
+// {
+//     QNetworkReply* reply = qobject_cast<QNetworkReply*>(sender());
+//     if (reply->error() == QNetworkReply::NoError)
+//     {
+//         QJsonDocument jsonResponse = QJsonDocument::fromJson(reply->readAll());
+//         QJsonObject jsonObject = jsonResponse.object();
+//         bool success = jsonObject["success"].toBool();
+//         if (success)
+//         {
+//             QMessageBox::information(this, "注册成功", "请登录！");
+//         }
+//         else
+//         {
+//             QString errorMessage = jsonObject["error_message"].toString();
+//             QMessageBox::warning(this, "注册失败", "请更换账号重新注册！" + errorMessage);
+//         }
+//     }
+//     else
+//     {
+//         QString errorString = reply->errorString();
+//         if(errorString == "Error transferring http://60.205.232.122:5000/register - server replied: INTERNAL SERVER ERROR")
+//         {
+//             QMessageBox::warning(this, "注册失败", "该账号已存在");
+//         }
+//         else
+//         {
+//             QMessageBox::warning(this, "注册失败", "网络错误，请重试。错误信息：" + errorString);
+//         }
+//     }
+//     reply->deleteLater();
+// }
 
 void login_register::onShowPasswordChecked(int state)
 {

@@ -34,7 +34,7 @@ private slots:
     void handleLoginReply();
     void on_registerButton_clicked();
     void onShowPasswordChecked(int state);
-    void handleRegisterReply();
+    //void handleRegisterReply();
 
 private:
     Ui::login_register *ui;
