@@ -380,8 +380,85 @@ void datavisualization::btn3onclicked()
     int Qstartday = startDayComboBox->currentText().toInt();
     int Qendday = endDayComboBox->currentText().toInt();
 
-    QString labelText2=Qcity + "市" + QString::number(Qyear) + "年" + QString::number(Qmonth) + "月"+ QString::number(Qstartday) + "～" + QString::number(Qendday) + "日天气分析：\n";
-    updateChartAndLabel(chartview2, labelText2);
+    QSqlQuery query1(db);
+    query1.prepare("SELECT weather FROM climate WHERE city = :city AND year = :year AND month = :month AND day <= :eday AND day >= :sday");
+    query1.bindValue(":city", Qcity);
+    query1.bindValue(":year", Qyear);
+    query1.bindValue(":month", Qmonth);
+    query1.bindValue(":sday", Qstartday);
+    query1.bindValue(":eday", Qendday);
+
+
+
+    // 执行查询语句
+    if (!query1.exec()) {
+        qDebug() << "Query execution failed. Error:" << query1.lastError().text();
+    } else {
+        qDebug() << "Query executed successfully.";
+
+        QMap<QString, int> weatherCounts; // 使用QMap来记录天气及其出现次数
+
+        while (query1.next()) {
+            QString weather = query1.value(0).toString();
+
+            // 检查天气是否已经在Map中存在，如果存在，则递增计数，否则添加新记录
+            if (weatherCounts.contains(weather)) {
+                weatherCounts[weather]++;
+            } else {
+                weatherCounts.insert(weather, 1);
+            }
+        }
+
+
+        int total=Qendday-Qstartday+1;
+        // 构造分析结果文本
+        QString labelText2 = Qcity + "市" + QString::number(Qyear) + "年" + QString::number(Qmonth) + "月"
+                             + QString::number(Qstartday) + "～" + QString::number(Qendday) + "日天气分析：\n";
+
+        labelText2 += "天数大于3天的天气有：\n";
+        bool isFirstHighFrequency = true; // 用于控制逗号的输出
+        bool havethree=0;
+        for (auto it = weatherCounts.constBegin(); it != weatherCounts.constEnd(); ++it) {
+            if (it.value() > 3) { // 大于3天的天气类型
+                if (!isFirstHighFrequency) {
+                    labelText2 += "； ";
+                }
+                labelText2 += it.key() + "：" + QString::number(it.value()) + "天";
+                isFirstHighFrequency = false;
+                havethree=1;
+            }
+        }
+        if(!havethree)
+        {
+            labelText2 += "没有天数大于3的天气 ";
+        }
+
+        // 找出出现次数最高的天气类型
+        QStringList mostFrequentWeathers;
+        int maxCount = 0;
+
+        for (auto it = weatherCounts.constBegin(); it != weatherCounts.constEnd(); ++it) {
+            if (it.value() > maxCount) {
+                maxCount = it.value();
+                mostFrequentWeathers.clear();
+                mostFrequentWeathers.append(it.key());
+            } else if (it.value() == maxCount) {
+                mostFrequentWeathers.append(it.key());
+            }
+        }
+
+        // 构造出现频率最高的天气类型文本
+        labelText2 += "\n出现频率最高的天气类型：\n";
+        for (const QString &weather : mostFrequentWeathers) {
+            labelText2 += weather+" " ;
+        }
+
+        double percentage = (static_cast<double>(maxCount) / total) * 100.0;
+        labelText2 += "：" + QString::number(maxCount) + "天，出现频率为"+ QString::number(percentage, 'f', 2) + "%";
+
+        updateChartAndLabel(chartview2, labelText2);
+
+   }
 }
 void datavisualization::btn4onclicked()
 {
@@ -391,9 +468,95 @@ void datavisualization::btn4onclicked()
     int Qstartday = startDayComboBox->currentText().toInt();
     int Qendday = endDayComboBox->currentText().toInt();
 
-    QString labelText3=Qcity + "市" + QString::number(Qyear) + "年" + QString::number(Qmonth) + "月"+ QString::number(Qstartday) + "～" + QString::number(Qendday) + "日风向分析：\n";
+    QSqlQuery query2;
+    query2.prepare("SELECT wind_direction FROM climate WHERE city = :city AND year = :year AND month = :month AND day BETWEEN :sday AND :eday");
+    query2.bindValue(":city", Qcity);
+    query2.bindValue(":year", Qyear);
+    query2.bindValue(":month", Qmonth);
+    query2.bindValue(":sday", Qstartday);
+    query2.bindValue(":eday", Qendday);
+    query2.exec();
+
+    // 初始化八个风向的风力计数器
+    int wind1 = 0;  // 东风
+    int wind2 = 0;  // 西风
+    int wind3 = 0;  // 南风
+    int wind4 = 0;  // 北风
+    int wind5 = 0;  // 东南风
+    int wind6 = 0;  // 东北风
+    int wind7 = 0;  // 西南风
+    int wind8 = 0;  // 西北风
+    int wind9 = 0;  // 微风
+
+    while (query2.next()) {
+        QString wind_direction = query2.value(0).toString();
+
+        // 根据风向更新计数器
+        if (wind_direction == "东风") {
+            wind1++;
+        } else if (wind_direction == "西风") {
+            wind2++;
+        } else if (wind_direction == "南风") {
+            wind3++;
+        } else if (wind_direction == "北风") {
+            wind4++;
+        } else if (wind_direction == "东南风") {
+            wind5++;
+        } else if (wind_direction == "东北风") {
+            wind6++;
+        } else if (wind_direction == "西南风") {
+            wind7++;
+        } else if (wind_direction == "西北风") {
+            wind8++;
+        } else if (wind_direction == "微风") {
+            wind9++;
+        }else if (wind_direction == "无持续风向") {
+            wind9++;
+        }
+        // 统计每种风向的天数
+        int maxDays = 0;
+        QString maxWindNames;  // 使用 QString 来保存多个风向名称
+        QString labelText3 = Qcity + "市" + QString::number(Qyear) + "年" + QString::number(Qmonth) + "月" + QString::number(Qstartday) + "～" + QString::number(Qendday) + "日风向分析：\n";
+
+        // 风向数组，按照你的顺序排列
+        QString windNames[9] = {"东风", "西风", "南风", "北风", "东南风", "东北风", "西南风", "西北风", "微风/无持续风向"};
+
+        int windCounts[9] = {wind1, wind2, wind3, wind4, wind5, wind6, wind7, wind8, wind9};
+
+        // 找出出现天数最多的风向
+        for (int i = 0; i < 9; ++i) {
+            if (windCounts[i] > maxDays) {
+                maxDays = windCounts[i];
+                maxWindNames = windNames[i];  // 更新最大天数风向名称
+            } else if (windCounts[i] == maxDays) {
+                maxWindNames += "，" + windNames[i];  // 多个风向名称用逗号隔开
+            }
+        }
+
+        // 加入出现天数最多的风向的信息
+        labelText3 += "出现天数最多的风向是：" + maxWindNames + "，有 " + QString::number(maxDays) + " 天\n";
+
+
+        if(!maxWindNames.contains("微风")&&Qendday-Qstartday+1>10)
+        {
+        labelText3 +="这段时间"+ maxWindNames+"较多"+"，气温可能";
+        // 加入气温分析的内容
+        if (maxWindNames.contains("东风")) {
+            labelText3 += "较暖哦";
+        }
+        if (maxWindNames.contains("西风")) {
+            labelText3 += "较凉哦";
+        }
+        if (maxWindNames.contains("南风")) {
+            labelText3 += "较暖湿哦";
+        }
+        if (maxWindNames.contains("北风")) {
+            labelText3 += "较凉哦";
+        }
+        }
 
     updateChartAndLabel(chartview3, labelText3);
+    }
 }
 
 //连接数据库
@@ -609,71 +772,18 @@ void datavisualization::mydraw()
         qDebug() << "Query executed successfully.";
 
         QMap<QString, int> weatherCounts;
-        weatherCounts.insert("阴", 0);
-        weatherCounts.insert("小雨", 0);
-        weatherCounts.insert("晴", 0);
-        weatherCounts.insert("多云", 0);
-        weatherCounts.insert("中雨", 0);
-        weatherCounts.insert("雾~多云", 0);
-        weatherCounts.insert("雾~晴", 0);
-        weatherCounts.insert("晴~多云", 0);
-        weatherCounts.insert("多云~晴", 0);
-        weatherCounts.insert("小雨~阴", 0);
-        weatherCounts.insert("雷阵雨~阵雨", 0);
-        weatherCounts.insert("雷阵雨~多云", 0);
-        weatherCounts.insert("多云~小雨", 0);
-        weatherCounts.insert("雷阵雨", 0);
-        weatherCounts.insert("雾", 0);
-        weatherCounts.insert("多云~大雨", 0);
-        weatherCounts.insert("阴~多云", 0);
-        weatherCounts.insert("大雨~小雨", 0);
-        weatherCounts.insert("多云~中雨", 0);
-        weatherCounts.insert("阴~多云", 0);
-        weatherCounts.insert("阴~中雨", 0);
-        weatherCounts.insert("雾~阴", 0);
-        weatherCounts.insert("多云~阴", 0);
-        weatherCounts.insert("阴~晴", 0);
-        weatherCounts.insert("中雨~小雨", 0);
-        weatherCounts.insert("多云~雨", 0);
-        weatherCounts.insert("小雨~雨", 0);
-        weatherCounts.insert("中雨~雨", 0);
-        weatherCounts.insert("小雨~雨", 0);
-        weatherCounts.insert("阴~小雨", 0);
-        weatherCounts.insert("大雨~多云", 0);
-        weatherCounts.insert("小雨~晴", 0);
-        weatherCounts.insert("中雨~多云", 0);
-        weatherCounts.insert("扬沙~多云", 0);
-        weatherCounts.insert("晴~小雨", 0);
-        weatherCounts.insert("晴~阴", 0);
-        weatherCounts.insert("中雨~大雨", 0);
-        weatherCounts.insert("小雨~多云", 0);
-        weatherCounts.insert("雾~小雨", 0);
-        weatherCounts.insert("阴~小雨", 0);
-        weatherCounts.insert("小雨~晴", 0);
-        weatherCounts.insert("雾~中雨", 0);
-        weatherCounts.insert("暴雨~晴", 0);
-        weatherCounts.insert("雾~大雨", 0);
 
 
-        weatherCounts.insert("多云转大雨", 0);
-        weatherCounts.insert("阴转多云", 0);
-        weatherCounts.insert("大雨转小雨", 0);
-        weatherCounts.insert("多云转中雨", 0);
-        weatherCounts.insert("阴转多云", 0);
-        weatherCounts.insert("阴转中雨", 0);
-        weatherCounts.insert("雾转阴", 0);
-        weatherCounts.insert("多云转阴", 0);
-        weatherCounts.insert("阴转晴", 0);
-        weatherCounts.insert("中雨转小雨", 0);
-        weatherCounts.insert("雾转多云", 0);
-        weatherCounts.insert("雾转晴", 0);
-        weatherCounts.insert("晴转多云", 0);
-        weatherCounts.insert("多云转晴", 0);
-        weatherCounts.insert("小雨转阴", 0);
-        weatherCounts.insert("多云转雨", 0);
-        weatherCounts.insert("小雨转雨", 0);
-        weatherCounts.insert("中雨转雨", 0);
-        weatherCounts.insert("小雨转雨", 0);
+        while (query1.next()) {
+            QString weather = query1.value(0).toString();
+
+            // 检查天气是否已经在Map中存在，如果存在，则递增计数，否则添加新记录
+            if (weatherCounts.contains(weather)) {
+                weatherCounts[weather]++;
+            } else {
+                weatherCounts.insert(weather, 1);
+            }
+        }
 
         QMap<QString, QColor> weatherColors;
         for (auto it = weatherCounts.begin(); it != weatherCounts.end(); ++it) {
@@ -683,22 +793,6 @@ void datavisualization::mydraw()
             QColor randomColor(red, green, blue);
             weatherColors.insert(it.key(), randomColor);
         }
-
-
-        while (query1.next()) {
-            QString weather = query1.value(0).toString();
-            if (weatherCounts.contains(weather)) {
-                weatherCounts[weather]++;
-            } else {
-                qDebug() << "Unknown weather type encountered:" << weather;
-            }
-        }
-
-        // qDebug() << "Weather counts:";
-        // for (auto it = weatherCounts.constBegin(); it != weatherCounts.constEnd(); ++it) {
-        //     qDebug() << it.key() << ":" << it.value();
-        // }
-
         series2->clear();
 
         for (auto it = weatherCounts.constBegin(); it != weatherCounts.constEnd(); ++it) {
@@ -750,7 +844,7 @@ void datavisualization::mydraw()
     QBarSet *barset6 = new QBarSet("东北风");
     QBarSet *barset7 = new QBarSet("西南风");
     QBarSet *barset8 = new QBarSet("西北风");
-    QBarSet *barset9 = new QBarSet("无持续风向");
+    QBarSet *barset9 = new QBarSet("微风/无持续风向");
 
     barset1->setColor(Qt::red);
     barset2->setColor(Qt::darkBlue);
