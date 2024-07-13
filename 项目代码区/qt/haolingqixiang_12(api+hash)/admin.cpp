@@ -79,7 +79,7 @@ admin::admin(QWidget *parent)
     connect(deleteUserButton, &QPushButton::clicked, this, &admin::deleteUser);
 
     resetPasswordButton = new QPushButton("重置密码", this);
-    resetPasswordButton->setVisible(false);
+    resetPasswordButton->setVisible(true);
     connect(resetPasswordButton, &QPushButton::clicked, this, &admin::resetPassword);
 
     QPushButton *addUserButton = new QPushButton("添加用户", this);

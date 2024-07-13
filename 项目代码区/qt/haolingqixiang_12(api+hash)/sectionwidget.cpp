@@ -1,82 +1,94 @@
 #include "sectionwidget.h"
 #include <QHBoxLayout>
-#include <QStringList>
+#include <QFont>
 
-SectionWidget::SectionWidget(const QString &weather, const QString &temp, const QString &winddir, const QString &windstr,const QString &humidity,QWidget *parent)
+SectionWidget::SectionWidget(const QString &time, const QString &weather, const QString &temp, const QString &winddir,
+                             const QString &windstr, const QString &humidity, QWidget *parent)
     : QWidget(parent)
 {
+    weatherLabelpic1 = new QLabel(this);  // 放图片的标签
+
     // 创建标签
-    weatherLabelpic1 = new QLabel(this);
-    weatherLabelpic2 = new QLabel(this);
-
-    QString weather1, weather2;
-    if (weather.contains("转"))
-    {
-        QStringList weatherTypes = weather.split("转");
-        weather1 = weatherTypes.value(0, "未知");
-        weather2 = weatherTypes.value(1, weather1);
-    }
-    else if (weather.contains("到"))
-    {
-        QStringList weatherTypes = weather.split("到");
-        weather1 = weatherTypes.value(0, "未知");
-        weather2 = weatherTypes.value(1, weather1);
-    }
-    else if (weather.contains("~"))
-    {
-        QStringList weatherTypes = weather.split("~");
-        weather1 = weatherTypes.value(0, "未知");
-        weather2 = weatherTypes.value(1, weather1);
-    }
-    else
-    {
-        weather1 = weather;
-        weather2 = weather;
-    }
-
-    drawWeather(weather1, weather2);
-
     weatherLabel = new QLabel(weather, this);
-    tempLabel = new QLabel("温度: " + temp + "°C", this);
-    winddLabel = new QLabel("风向: " + winddir, this);
-    windsLabel = new QLabel("风力: " + windstr, this);
-    humidityLabel = new QLabel("湿度：" + humidity); //湿度
+    timeLabel = new QLabel(time, this);
+    tempLabel = new QLabel("温度 " + temp + "°C", this);
+    winddLabel = new QLabel("风向 " + winddir, this);
+    windsLabel = new QLabel("风力 " + windstr, this);
+    humidityLabel = new QLabel("湿度 " + humidity, this);
 
+    // 设置标签居中对齐
+    weatherLabelpic1->setAlignment(Qt::AlignCenter);
+    weatherLabel->setAlignment(Qt::AlignCenter);
+    timeLabel->setAlignment(Qt::AlignCenter);
+    tempLabel->setAlignment(Qt::AlignCenter);
+    winddLabel->setAlignment(Qt::AlignCenter);
+    windsLabel->setAlignment(Qt::AlignCenter);
+    humidityLabel->setAlignment(Qt::AlignCenter);
 
+    // 设置标签字体大小
+    weatherLabel->setFont(QFont("Microsoft YaHei", 10, QFont::Bold));
+    timeLabel->setFont(QFont("Microsoft YaHei", 10, QFont::Bold));
+    tempLabel->setFont(QFont("Microsoft YaHei", 10, QFont::Bold));
+    winddLabel->setFont(QFont("Microsoft YaHei", 10, QFont::Bold));
+    windsLabel->setFont(QFont("Microsoft YaHei", 10, QFont::Bold));
+    humidityLabel->setFont(QFont("Microsoft YaHei", 10, QFont::Bold));
+
+    // 布局
     mainLayout = new QVBoxLayout(this);
+    mainLayout->addWidget(timeLabel);
     mainLayout->addWidget(weatherLabelpic1);
-    mainLayout->addWidget(weatherLabelpic2);
     mainLayout->addWidget(weatherLabel);
     mainLayout->addWidget(tempLabel);
     mainLayout->addWidget(winddLabel);
     mainLayout->addWidget(windsLabel);
     mainLayout->addWidget(humidityLabel);
+
+    // 调用函数
+    drawWeather(weather);
 }
 
-void SectionWidget::drawWeather(const QString &weatherType1, const QString &weatherType2)
+
+void SectionWidget::drawWeather(const QString &weatherType)
 {
-    QPixmap weatherpyin(":/weather/weatherp/overcas.png");
-    QPixmap weatherpqing(":/weather/weatherp/sunny.png");
-    QPixmap weatherpduoyun(":/weather/weatherp/cloudy.png");
+    QPixmap weatherpovercast(":/weatherp/overcast.png");
+    QPixmap weatherpsunny(":/weatherp/sunny.png");
+    QPixmap weatherpcloudy(":/weatherp/partly_cloudy.png");
+    QPixmap weatherplrain(":/weatherp/little_rain.png");
+    QPixmap weatherpmrain(":/weatherp/moderate_rain_and_shower.png");
+    QPixmap weatherphrain(":/weatherp/heavy_rain.png");
+    QPixmap weatherpshower(":/weatherp/moderate_rain_and_shower.png");
+    QPixmap weatherpthunderstorm(":/weatherp/thunderstorm.png");
 
-    if (weatherType1 == "阴")
-        weatherLabelpic1->setPixmap(weatherpyin);
-    else if (weatherType1 == "晴")
-        weatherLabelpic1->setPixmap(weatherpqing);
-    else if (weatherType1 == "多云")
-        weatherLabelpic1->setPixmap(weatherpduoyun);
+    // Adjust pixmap sizes if needed
+    int desiredWidth = 100;  // Set your desired width here
+    int desiredHeight = 100; // Set your desired height here
+
+    weatherpovercast = weatherpovercast.scaled(desiredWidth, desiredHeight, Qt::KeepAspectRatio);
+    weatherpsunny = weatherpsunny.scaled(desiredWidth, desiredHeight, Qt::KeepAspectRatio);
+    weatherpcloudy = weatherpcloudy.scaled(desiredWidth, desiredHeight, Qt::KeepAspectRatio);
+    weatherplrain = weatherplrain.scaled(desiredWidth, desiredHeight, Qt::KeepAspectRatio);
+    weatherpmrain = weatherpmrain.scaled(desiredWidth, desiredHeight, Qt::KeepAspectRatio);
+    weatherphrain = weatherphrain.scaled(desiredWidth, desiredHeight, Qt::KeepAspectRatio);
+    weatherpshower = weatherpshower.scaled(desiredWidth, desiredHeight, Qt::KeepAspectRatio);
+    weatherpthunderstorm = weatherpthunderstorm.scaled(desiredWidth, desiredHeight, Qt::KeepAspectRatio);
+
+    // Set pixmap based on weatherType
+    if (weatherType == "阴"||weatherType == "阴天")
+        weatherLabelpic1->setPixmap(weatherpovercast);
+    else if (weatherType == "晴"||weatherType == "晴天")
+        weatherLabelpic1->setPixmap(weatherpsunny);
+    else if (weatherType == "多云")
+        weatherLabelpic1->setPixmap(weatherpcloudy);
+    else if (weatherType == "小雨")
+        weatherLabelpic1->setPixmap(weatherplrain);
+    else if (weatherType == "中雨")
+        weatherLabelpic1->setPixmap(weatherpmrain);
+    else if (weatherType == "暴雨")
+        weatherLabelpic1->setPixmap(weatherphrain);
+    else if (weatherType == "阵雨")
+        weatherLabelpic1->setPixmap(weatherpshower);
+    else if (weatherType == "雷阵雨")
+        weatherLabelpic1->setPixmap(weatherpthunderstorm);
     else
-        weatherLabelpic1->setText("未知");
-
-    if (weatherType2 == "阴")
-        weatherLabelpic2->setPixmap(weatherpyin);
-    else if (weatherType2 == "晴")
-        weatherLabelpic2->setPixmap(weatherpqing);
-    else if (weatherType2 == "多云")
-        weatherLabelpic2->setPixmap(weatherpduoyun);
-    else
-        weatherLabelpic2->setText("未知");
-
-    weatherLabelpic1->show();
-    weatherLabelpic2->show();
+        weatherLabelpic1->setText("图片加载失败");
 }

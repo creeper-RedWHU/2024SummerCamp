@@ -40,8 +40,6 @@ public:
     void updateTooltip4(QPointF point, bool state);
     void updateTooltip5(QPointF point, bool state);
 
-    bool connectToDatabase();
-
     void draw();
 
 private slots:

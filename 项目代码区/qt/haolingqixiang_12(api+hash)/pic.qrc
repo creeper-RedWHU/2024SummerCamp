@@ -1,7 +1,11 @@
 <RCC>
-    <qresource prefix="/weather">
-        <file>weatherp/cloudy.png</file>
-        <file>weatherp/overcas.png</file>
+    <qresource prefix="/">
+        <file>weatherp/heavy_rain.png</file>
+        <file>weatherp/little_rain.png</file>
+        <file>weatherp/moderate_rain_and_shower.png</file>
+        <file>weatherp/overcast.png</file>
+        <file>weatherp/partly_cloudy.png</file>
         <file>weatherp/sunny.png</file>
+        <file>weatherp/thunderstorm.png</file>
     </qresource>
 </RCC>

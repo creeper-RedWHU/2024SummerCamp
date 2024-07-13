@@ -199,7 +199,14 @@ void login_register::handleRegisterReply()
     else
     {
         QString errorString = reply->errorString();
-        QMessageBox::warning(this, "注册失败", "网络错误，请重试。错误信息：" + errorString);
+        if(errorString == "Error transferring http://60.205.232.122:5000/register - server replied: INTERNAL SERVER ERROR")
+        {
+            QMessageBox::warning(this, "注册失败", "该账号已存在");
+        }
+        else
+        {
+            QMessageBox::warning(this, "注册失败", "网络错误，请重试。错误信息：" + errorString);
+        }
     }
     reply->deleteLater();
 }

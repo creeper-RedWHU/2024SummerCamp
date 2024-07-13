@@ -1,29 +1,27 @@
 #include "simulation.h"
 #include <QDebug>
+#include "database.h"
 
 Simulation::Simulation(QWidget *parent)
     : QWidget(parent)
 {
-    connectToDatabase();
-    // 先连接数据库
-    if (!connectToDatabase()) {
-        QMessageBox::critical(this, "数据库连接失败", "无法连接到数据库，请检查配置。");
+    database thisdb;
+
+    if (!thisdb.connectToDatabase()) {
+        QMessageBox::critical(this, "数据库连接失败", "数据模拟无法连接到数据库，请检查配置。");
     } else {
         qDebug() << "成功连接数据库";
     }
 
-    // Initialize the UI components
     lowerTempLineEdit = new QLineEdit(this);
     upperTempLineEdit = new QLineEdit(this);
     simulateButton = new QPushButton("模拟", this);
     imageLabel = new QLabel(this);
 
-    // Set validators to restrict input to integer values between -30 and 50
     tempValidator = new QIntValidator(-30, 50, this);
     lowerTempLineEdit->setValidator(tempValidator);
     upperTempLineEdit->setValidator(tempValidator);
 
-    // Layout setup
     QHBoxLayout *tempLayout = new QHBoxLayout;
     tempLayout->addWidget(new QLabel("下限温度:"));
     tempLayout->addWidget(lowerTempLineEdit);
@@ -41,7 +39,7 @@ Simulation::Simulation(QWidget *parent)
 
     setLayout(mainLayout);
 
-    // Connect the button click to the slot
+
     connect(simulateButton, &QPushButton::clicked, this, &Simulation::onSimulateClicked);
 
     // QSS样式
@@ -91,7 +89,6 @@ Simulation::Simulation(QWidget *parent)
 
     setStyleSheet(styleSheet);
 
-    // Initialize chart components
     series1 = new QLineSeries;//最高气温折线
     series4 = new QLineSeries;//最低气温折线
     scatterSeries1 = new QScatterSeries();//最高气温散点
@@ -118,24 +115,9 @@ Simulation::~Simulation()
 {
 }
 
-bool Simulation::connectToDatabase()
-{
-    db = QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("60.205.232.122");
-    db.setDatabaseName("data");
-    db.setUserName("root");
-    db.setPassword("QAZ123wsx");
-
-    if (!db.open()) {
-        qDebug() << "Database error occurred:" << db.lastError();
-        return false;
-    }
-    return true;
-}
 
 void Simulation::draw()
 {
-    connectToDatabase();
 
     // ！！！待修改！！！
 
