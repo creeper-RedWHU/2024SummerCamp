@@ -106,7 +106,7 @@ def getdouble(s):
         if s[i] == '.':
             a += int(s[i + 1]) * 0.1
             return a
-        else:
+        elif s[i]!='℃':
             a = a * 10 + int(s[i])
     return a
 
@@ -131,7 +131,7 @@ def get_data(url, city, year, month):
         item = str(item)
         link = re.findall(findLinkDate, item)
         datas = re.findall(findDataEach, item)
-        '''
+
         conn = pymysql.connect(
             host='localhost',
             port=3306,
@@ -139,15 +139,16 @@ def get_data(url, city, year, month):
             password='zhoujin@MySQL',
             charset='utf8',
             database="data"
-        )'''
+        )
+        '''
         conn = pymysql.connect(
             host='60.205.232.122',
             port=3306,
             user='root',
-            password='123456',
+            password='QAZ123wsx',
             charset='utf8',
             database="data"
-        )
+        )'''
         cursor = conn.cursor()
         sql = "INSERT INTO climate(max_temperature, min_temperature,city,year,month,day,weather,wind_direction,wind_strength) VALUES (%s, %s,\'%s\',%s,%s,%s,\'%s\',\'%s\',\'%s\')"
         dats = []
@@ -183,7 +184,7 @@ def update(ct, startYear, endYear, startMonth, endMonth):
 
 
 def whetherhas(ct, year, month):
-    '''
+
     conn = pymysql.connect(
         host='localhost',
         port=3306,
@@ -197,10 +198,10 @@ def whetherhas(ct, year, month):
         host='60.205.232.122',
         port=3306,
         user='root',
-        password='123456',
+        password='QAZ123wsx',
         charset='utf8',
         database="data"
-    )
+    )'''
     cursor = conn.cursor()
     ans = False
     SQLSentence = "select * from climate where city='%s' and year= %d and month=%d"
@@ -421,12 +422,12 @@ if __name__ == '__main__':
         print("City ",city,"'s data from",syear,".",smonth,"to",eyear,".",emonth,end='')
         print()
     '''
-    '''
-    city="长沙"
-    syear=2020
-    smonth=5
-    eyear=2020
-    emonth=8
+
+    city="武汉"
+    syear=2023
+    smonth=1
+    eyear=2023
+    emonth=12
     fetchData(city,syear,eyear,smonth,emonth)
     '''
-    GetDataByHours("杭州")
+    GetDataByHours("杭州")'''
