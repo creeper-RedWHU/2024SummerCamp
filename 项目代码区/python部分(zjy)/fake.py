@@ -13,6 +13,7 @@ import datetime
 import os
 import cv2
 from config import Config
+
 '''
 数据库标准说明：
 MySQL型数据库
@@ -34,20 +35,9 @@ users:user_name TEXT,password TEXT,identity INT
     参数说明：城市名字
     应用场景说明：Qt端每次查询某一个城市最近24小时的数据先调用这个函数
     功能说明：爬取过去24小时的温度和空气质量，每次爬取前清除数据
-    
+
 4.void fetch12future(string ct)
 
-'''
-
-'''
-连接数据库
-conn = pymysql.connect(
-    host='localhost',
-    port=3306,
-    user='root',
-    password='zhoujin@MySQL',
-    charset='utf8'
-)
 '''
 
 urlFirst = "https://lishi.tianqi.com/"
@@ -107,7 +97,7 @@ def getdouble(s):
         if s[i] == '.':
             a += int(s[i + 1]) * 0.1
             return a
-        elif s[i]!='℃':
+        elif s[i] != '℃':
             a = a * 10 + int(s[i])
     return a
 
@@ -139,15 +129,6 @@ def get_data(url, city, year, month):
             password=Config.MYSQL_PASSWORD,
             database=Config.MYSQL_DB,
         )
-        '''
-        conn = pymysql.connect(
-            host='60.205.232.122',
-            port=3306,
-            user='root',
-            password='QAZ123wsx',
-            charset='utf8',
-            database="data"
-        )'''
         cursor = conn.cursor()
         sql = "INSERT INTO climate(max_temperature, min_temperature,city,year,month,day,weather,wind_direction,wind_strength) VALUES (%s, %s,\'%s\',%s,%s,%s,\'%s\',\'%s\',\'%s\')"
         dats = []
@@ -188,17 +169,8 @@ def whetherhas(ct, year, month):
         user=Config.MYSQL_USER,
         password=Config.MYSQL_PASSWORD,
         database=Config.MYSQL_DB,
+        cursorclass=pymysql.cursors.DictCursor
     )
-    '''
-    conn = pymysql.connect(
-        host='60.205.232.122',
-        port=3306,
-        user='root',
-        password='QAZ123wsx',
-        charset='utf8',
-        database="data"
-    )'''
-
     cursor = conn.cursor()
     ans = False
     SQLSentence = "select * from climate where city='%s' and year= %d and month=%d"
@@ -222,7 +194,6 @@ def fetchData(ct, startYear, endYear, startMonth, endMonth):
                 a = get_data(getURL(ct, year, month), ct, year, month)
             if a:
                 print(ct, ' ', year, month, "ok")
-                time.sleep(1)
         return 0
     for year in range(startYear, endYear + 1):
         if year == startYear:
@@ -232,7 +203,6 @@ def fetchData(ct, startYear, endYear, startMonth, endMonth):
                     a = get_data(getURL(ct, year, month), ct, year, month)
                 if a:
                     print(ct, ' ', year, month, "ok")
-                    time.sleep(1)
         elif year == endYear:
             for month in range(1, endMonth + 1):
                 a = True
@@ -240,7 +210,6 @@ def fetchData(ct, startYear, endYear, startMonth, endMonth):
                     a = get_data(getURL(ct, year, month), ct, year, month)
                 if a:
                     print(ct, ' ', year, month, "ok")
-                    time.sleep(1)
         else:
             for month in range(1, 13):
                 a = True
@@ -248,7 +217,6 @@ def fetchData(ct, startYear, endYear, startMonth, endMonth):
                     a = get_data(getURL(ct, year, month), ct, year, month)
                 if a:
                     print(ct, ' ', year, month, "ok")
-                    time.sleep(1)
 
 
 def topower(s):
@@ -288,54 +256,46 @@ def topower(s):
     else:
         return 12
 
+
 def toweather(url):
-    pic=requests.get(url)
-    file_name='tmp.png'
+    pic = requests.get(url)
+    file_name = 'tmp.png'
     with open(file_name, 'wb') as f:
         f.write(pic.content)
-    address='D:\\pythonProject'
-    target=''
+    address = '.'
+    target = ''
     for target in os.listdir(address):
-        if target[-3:]!="png" or target=="tmp.png":
+        if target[-3:] != "png" or target == "tmp.png":
             continue
-        file1=target
-        file2=file_name
-        image1=cv2.imread(file1)
-        image2=cv2.imread(file2)
-        difference=cv2.subtract(image1, image2)
+        file1 = target
+        file2 = file_name
+        image1 = cv2.imread(file1)
+        image2 = cv2.imread(file2)
+        difference = cv2.subtract(image1, image2)
         result = not np.any(difference)
         if result:
             break
 
-    file_name="tmp.png"
+    file_name = "tmp.png"
     os.remove(file_name)
-    diction={"yintian":"阴天",'cloudy':"多云",'midrain':'中雨','heavy_rain':"暴雨",'smallrain':'小雨','sometimesrain':'阵雨','summer':"晴天","thunder_rain":'雷阵雨'}
-    return diction[target[:target.__len__()-4]]
+    diction = {"yintian": "阴天", 'cloudy': "多云", 'midrain': '中雨', 'heavy_rain': "暴雨", 'smallrain': '小雨',
+               'sometimesrain': '阵雨', 'summer': "晴天", "thunder_rain": '雷阵雨'}
+    return diction[target[:target.__len__() - 4]]
+
+
 # GetDataByHours:获得过去24小时温度数据
 # 思路：先获得逐小时天气预报数据，然后插值法扩充数据，最后再用线性拟合/多项式拟合
 def GetDataByHours(ct):
-    '''
     conn = pymysql.connect(
-        host='localhost',
-        port=3306,
-        user='root',
-        password='zhoujin@MySQL',
-        charset='utf8',
-        database="data"
-    )
-    '''
-    conn = pymysql.connect(
-        host='60.205.232.122',
-        port=3306,
-        user='root',
-        password='QAZ123wsx',
-        charset='utf8',
-        database="data"
+        host=Config.MYSQL_HOST,
+        user=Config.MYSQL_USER,
+        password=Config.MYSQL_PASSWORD,
+        database=Config.MYSQL_DB,
+        cursorclass=pymysql.cursors.DictCursor
     )
     '共用数据表：hours_data'
     '数据项：(城市，月，日，小时，温度，湿度，天气，风向，风力)'
     'past 12 hours data'
-
     url = "https://datashareclub.com/area/"
     province = {"武汉": "湖北", "杭州": "浙江", "长沙": "湖南", "北京": "北京", "上海": "上海", "南京": "江苏"}
     url += province[ct] + '/' + ct + '.html'
@@ -378,25 +338,27 @@ def GetDataByHours(ct):
     for item in soup.find('table', class_="hour-table"):
         item = str(item)
         lst = re.findall(findHoursDataThird, item)
-        id=0
+        id = 0
         if len(lst):
             for i in range(8):
+
                 if datum.__len__():
-                    if toint(lst[i][:2])<datum[-1][1]:
-                        id=1
-                datum.append([id, toint(lst[i][:2]),getdouble(lst[i+8*1]), lst[i + 8 * 6][:lst[i + 8 * 6].__len__()],
-                                  lst[i + 8 * 4][:lst[i + 8 * 4].__len__()],
-                                  str(topower(lst[i + 8 * 3][:lst[i + 8 * 3].__len__()])) + '级'])
+                    if toint(lst[i][:2]) < datum[-1][1]:
+                        id = 1
+                datum.append(
+                    [id, toint(lst[i][:2]), getdouble(lst[i + 8 * 1]), lst[i + 8 * 6][:lst[i + 8 * 6].__len__()],
+                     lst[i + 8 * 4][:lst[i + 8 * 4].__len__()],
+                     str(topower(lst[i + 8 * 3][:lst[i + 8 * 3].__len__()])) + '级'])
     for i in range(8):
-        url_add = str(weatherlst[i])[28:len(str(weatherlst[i]))-8]
-        url_add=url+url_add
+        url_add = str(weatherlst[i])[28:len(str(weatherlst[i])) - 8]
+        url_add = url + url_add
         weatherData.append(toweather(url_add))
     for i in range(8):
-        day=datetime.datetime.today()+datetime.timedelta(datum[i][0])
-        month=day.month
-        day=day.day
+        day = datetime.datetime.today() + datetime.timedelta(datum[i][0])
+        month = day.month
+        day = day.day
         sql = "INSERT INTO hours_data(month,day,hour,temperature,humidity,weather,wind_direction,wind_power) VALUES (%d,%d,%d,%f,\'%s\',\'%s\',\'%s\',\'%s\')"
-        sql%=(month,day,datum[i][1],datum[i][2],datum[i][3],weatherData[i],datum[i][4],datum[i][5])
+        sql %= (month, day, datum[i][1], datum[i][2], datum[i][3], weatherData[i], datum[i][4], datum[i][5])
         cursor.execute(sql)
         conn.commit()
 
@@ -420,10 +382,11 @@ if __name__ == '__main__':
     '''
     '''
     city="武汉"
-    syear=2020
-    smonth=1
-    eyear=2020
+    syear=2021
+    smonth=11
+    eyear=2021
     emonth=12
     fetchData(city,syear,eyear,smonth,emonth)
     '''
     GetDataByHours("杭州")
+
