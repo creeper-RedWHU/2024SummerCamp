@@ -12,7 +12,6 @@ import matplotlib.pyplot as plt
 from statsmodels.tsa.holtwinters import ExponentialSmoothing
 from statsmodels.tsa.ar_model import AutoReg
 from statsmodels.tsa.statespace.sarimax import SARIMAX
-from sklearn.neighbors import KNeighborsRegressor
 """
 模拟算法
 
@@ -125,13 +124,14 @@ def predictBySARIMA_5(lst,cursor,conn):
 
 def predict_fake(max_temp,min_temp):
     length=40
-    '''
+
     conn = pymysql.connect(
         host=Config.MYSQL_HOST,
         user=Config.MYSQL_USER,
         password=Config.MYSQL_PASSWORD,
         database=Config.MYSQL_DB,
-    )'''
+    )
+    '''
     conn = pymysql.connect(
         host='localhost',
         port=3306,
@@ -140,6 +140,7 @@ def predict_fake(max_temp,min_temp):
         charset='utf8',
         database="data"
     )
+    '''
     cursor = conn.cursor()
     make_data(max_temp,min_temp,conn,cursor,length)
     sql = "SELECT * FROM  analog_data where id = 0 order by time asc"
