@@ -130,9 +130,9 @@ forecast::forecast(QWidget *parent)
 
     // 创建进度对话框
     progressDialog = new QProgressDialog("正在预测，请稍候...", "取消", 0, 0, this);
-    progressDialog->setWindowModality(Qt::WindowModal);
     progressDialog->setCancelButton(nullptr); // 隐藏取消按钮
     progressDialog->setRange(0, 0); // 无限进度条
+    progressDialog->close();
 }
 
 forecast::~forecast()
@@ -146,7 +146,7 @@ void forecast::onSelectCityClicked()
 
 void forecast::onPredictClicked()
 {
-    progressDialog->show(); // 显示进度对话框
+    progressDialog->open();
 
     api *forecast_api = new api;
     double data;
@@ -158,7 +158,7 @@ void forecast::onPredictClicked()
 
 void forecast::onPredictionReady(double data)
 {
-    progressDialog->hide(); // 隐藏进度对话框
+    progressDialog->close(); // 关闭进度对话框
 
     qDebug() << "预测结果:" << data;
 
