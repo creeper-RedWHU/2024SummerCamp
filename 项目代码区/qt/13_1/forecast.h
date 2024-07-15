@@ -15,6 +15,7 @@
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QtCharts>
+#include <QProgressDialog>
 
 class forecast : public QWidget
 {
@@ -44,6 +45,7 @@ private:
     QComboBox *cityBox;
     QPushButton *btnPredict;
     QLabel *imagePlaceholder;
+    QProgressDialog *progressDialog;
 };
 
 #endif // FORECAST_H
