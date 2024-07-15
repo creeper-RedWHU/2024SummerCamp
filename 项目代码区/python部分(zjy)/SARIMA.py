@@ -82,15 +82,6 @@ def SARIMA_search(data):
 
 
 def SARIMA_Predict(city):
-    '''conn = pymysql.connect(
-        host='localhost',
-        port=3306,
-        user='root',
-        password='zhoujin@MySQL',
-        charset='utf8',
-        database="data"
-    )'''
-
     conn = pymysql.connect(
         host=Config.MYSQL_HOST,
         user=Config.MYSQL_USER,
@@ -100,18 +91,18 @@ def SARIMA_Predict(city):
     '思路：获取历史几年的当月数据'
     month_day = {1: 31, 2: 28, 3: 31, 4: 30, 5: 31, 6: 30, 7: 31, 8: 31, 9: 30, 10: 31, 11: 30, 12: 31}
     cursor = conn.cursor()
-    sql="truncate table future_climate"
+    sql = "truncate table future_climate"
     cursor.execute(sql)
-    for i in range(0,2):
-        month_now =datetime.datetime.today().month+i
-        year_now=datetime.datetime.today().year
-        if month_now>12:
-            month_now=1
-            year_now+=1
+    for i in range(0, 2):
+        month_now = datetime.datetime.today().month + i
+        year_now = datetime.datetime.today().year
+        if month_now > 12:
+            month_now = 1
+            year_now += 1
         for year in range(year_now - 5, year_now):
             GetData.fetchData(city, year, year, month_now, month_now)
         sql = "select * from climate where month=%d and year>=%d and year<%d and city=\'%s\' order by year asc,month asc,day asc" % (
-                month_now,year_now - 5, year_now,city)
+            month_now, year_now - 5, year_now, city)
         cursor.execute(sql)
         lst = cursor.fetchall()
         temperature_max_list = [lst[i][0] for i in range(len(lst))]
@@ -122,48 +113,26 @@ def SARIMA_Predict(city):
         data_max = pd.DataFrame(dict_max)
         data_min = pd.DataFrame(dict_min)
         NGE_max_tmp = data_max["max_temp"]
-        NGE_min_tmp=data_min["min_temp"]
-        #NGE_max_tmp_diff1_seasonal = data_max["max_temp"].diff(month_day[month_now])
-        #NGE_min_tmp_diff1_seasonal = data_min["min_temp"].diff(month_day[month_now])
-        #STLJudge(NGE_max_tmp_diff1_seasonal)
-        #test_stationarity(NGE_max_tmp_diff1_seasonal.dropna(), 1e-3)
-        #test_white_noise(NGE_max_tmp_diff1_seasonal.dropna(), 0.01)
-        #STLJudge(NGE_max_tmp)
-        # SARIMA_search(NGE_max_tmp_diff1_seasonal)
+        NGE_min_tmp = data_min["min_temp"]
         model = sm.tsa.SARIMAX(NGE_max_tmp, order=(0, 1, 2), seasonal_order=(2, 1, 2, month_day[month_now]))
         SARIMA_m = model.fit()
-        model_min=sm.tsa.SARIMAX(NGE_min_tmp, order=(0, 1, 2), seasonal_order=(2, 1, 2, month_day[month_now]))
+        model_min = sm.tsa.SARIMAX(NGE_min_tmp, order=(0, 1, 2), seasonal_order=(2, 1, 2, month_day[month_now]))
         SARIMA_m_min = model_min.fit()
-        #test_white_noise(SARIMA_m.resid, 0.05)  # SARIMA_m.resid提取模型残差，并检验是否为白噪声
-        #fig = SARIMA_m.plot_diagnostics(figsize=(15, 12))  # plot_diagnostics对象允许我们快速生成模型诊断并调查任何异常行为
-        # plt.show()
+
         # 预测未来
         forecast = SARIMA_m.get_forecast(steps=month_day[month_now])
-        forecast_min=SARIMA_m_min.get_forecast(steps=month_day[month_now])
+        forecast_min = SARIMA_m_min.get_forecast(steps=month_day[month_now])
 
         for j in range(len(forecast.predicted_mean)):
-            if i==0:
-                if j<datetime.datetime.today().day-1:
+            if i == 0:
+                if j < datetime.datetime.today().day - 1:
                     continue
-            sql="INSERT INTO future_climate VALUES (%d,%d,%d,%f,\'%s\',%f)"
-            sql%=(year_now,month_now,j+1,forecast.predicted_mean[j+5*month_day[month_now]],city,forecast_min.predicted_mean[j+5*month_day[month_now]])
+            sql = "INSERT INTO future_climate VALUES (%d,%d,%d,%f,\'%s\',%f)"
+            sql %= (year_now, month_now, j + 1, forecast.predicted_mean[j + 5 * month_day[month_now]], city,
+                    forecast_min.predicted_mean[j + 5 * month_day[month_now]])
             cursor.execute(sql)
             conn.commit()
-        '''
-        figgy, ax = plt.subplots(figsize=(20, 16))
-        NGE_max_tmp.plot(ax=ax, label="base data")
-        forecast.predicted_mean.plot(ax=ax, label="forecast data")
-        ax.legend(loc="best", fontsize=20)
-        ax.set_xlabel("时间", fontsize=20)
-        ax.set_ylabel("温度", fontsize=18)
-        plt.xticks(fontsize=20)
-        plt.yticks(fontsize=20)
-        plt.show()
-        STLJudge(df_max)
-        STLJudge(df_min)
-        test_stationarity(df_max, 1e-3)
-        test_stationarity(df_min, 1e-3)
-        '''
+
     cursor.close()
     conn.close()
 
