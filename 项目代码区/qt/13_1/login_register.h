@@ -45,6 +45,7 @@ private:
     QVBoxLayout *layout;
     QLineEdit *le1, *le2;
     QLabel *la1, *la2;
+    QLabel *backgroundLabel;
     QCheckBox *showPasswordCheckBox;
 
     QSqlDatabase db;

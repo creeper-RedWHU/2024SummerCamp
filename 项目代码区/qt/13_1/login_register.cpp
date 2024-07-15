@@ -14,6 +14,10 @@ login_register::login_register(QWidget *parent)
 
     QVBoxLayout *vbox = new QVBoxLayout(this);
 
+    backgroundLabel = new QLabel(this);
+    backgroundLabel->setStyleSheet("QLabel { background-image: url(:/logo/7.jpg); background-repeat: no-repeat; background-position: top; }");
+    backgroundLabel->setFixedSize(400, 89);
+
     btn1 = new QPushButton("登录", this);
     btn2 = new QPushButton("注册", this);
     le1 = new QLineEdit(this);
@@ -27,6 +31,7 @@ login_register::login_register(QWidget *parent)
     le1->setPlaceholderText("请输入账号");
     le2->setPlaceholderText("请输入密码");
 
+    vbox->addWidget(backgroundLabel);
     vbox->addWidget(la1);
     vbox->addWidget(le1);
     vbox->addWidget(la2);
@@ -88,7 +93,7 @@ login_register::login_register(QWidget *parent)
     this->setStyleSheet(styleSheet);
 
     setLayout(vbox);
-    this->setFixedSize(400, 300);
+    this->setFixedSize(420, 380);
 
     connect(btn1, &QPushButton::clicked, this, &login_register::on_loginButton_clicked);
     connect(btn2, &QPushButton::clicked, this, &login_register::on_registerButton_clicked);

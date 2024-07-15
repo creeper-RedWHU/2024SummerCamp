@@ -12,5 +12,6 @@
         <file>lifep/sports.png</file>
         <file>lifep/umbra_closed.png</file>
         <file>lifep/unbra_open.png</file>
+        <file>logo/7.jpg</file>
     </qresource>
 </RCC>
