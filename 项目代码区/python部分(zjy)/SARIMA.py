@@ -1,6 +1,7 @@
 import datetime
 import numpy as np
 import pandas as pd
+from scipy import io
 import statsmodels.api as sm
 import matplotlib.pyplot as plt
 from statsmodels.stats.diagnostic import acorr_ljungbox
@@ -195,9 +196,13 @@ def SARIMA_Predict(city):
     ax.yaxis.set_major_locator(y_major_locator)
     #plt.legend()
     #plt.show()
-    plt.savefig('sample.png', dpi=300,bbox_inches='tight', pad_inches=0)
+    img = io.BytesIO()
+    plt.savefig(img, format='png')
+    img.seek(0)
+    plt.close()  # 关闭图形以释放内存
     cursor.close()
     conn.close()
+    return img
 
 
 if __name__ == '__main__':
