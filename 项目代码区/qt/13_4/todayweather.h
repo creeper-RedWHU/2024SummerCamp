@@ -37,6 +37,7 @@ public:
     QChart *chart;
     QComboBox *cityBox;  // 城市的组合框控件
     QPushButton *btn;    // 查询按钮
+    QProgressDialog *progressDialog;
 
     LifeIndexWidget *wearIndex;
 
