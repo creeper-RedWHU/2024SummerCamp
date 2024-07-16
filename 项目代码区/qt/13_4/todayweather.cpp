@@ -83,7 +83,7 @@ todayweather::todayweather(QWidget *parent) :
         "}"
         );
 
-    connect(btn, &QPushButton::clicked, this, &todayweather::search);
+    connect(btn, &QPushButton::clicked, this, &todayweather::onWeatherRequest);
 
     weatherwidget = new QStackedWidget;
     QWidget *blankPage = new QWidget;
@@ -95,6 +95,12 @@ todayweather::todayweather(QWidget *parent) :
     setLayout(mainLayout);
     this->showMaximized();
     mainLayout->setSizeConstraint(QLayout::SetNoConstraint);
+
+    // 创建进度对话框
+    progressDialog = new QProgressDialog("正在预测，请稍候...", "取消", 0, 0, this);
+    progressDialog->setCancelButton(nullptr); // 隐藏取消按钮
+    progressDialog->setRange(0, 0); // 无限进度条
+    progressDialog->close();
 }
 
 todayweather::~todayweather()
@@ -107,9 +113,6 @@ void todayweather::search()
 
     QString city = cityBox->currentText();
 
-    //这里需要根据城市调用今天api
-    onWeatherRequest();
-    //得到最新数据
 
     QString demot,demoh,demow,demowd,demowp;
     if(getweather(7,14,11,demot,demoh,demow,demowd,demowp))
@@ -137,7 +140,6 @@ void todayweather::search()
         if (getweather(months[i], days[i], hours[i], temperatures[i], humidities[i], weathers[i], wind_directions[i], wind_strengths[i]))
         {
             i++;
-            //qDebug() << "找到了";
         }
         currentDateTime_1 = currentDateTime_1.addSecs(3600); // 在前者的基础上加1小时
         // 更新时间
@@ -145,22 +147,10 @@ void todayweather::search()
             months[i]=currentDateTime_1.date().month();
             days[i]=currentDateTime_1.date().day();
             hours[i]=currentDateTime_1.time().hour();
-            //qDebug()<<" 当前时间为"<<months[i]<<" "<<days[i]<<" "<<hours[i];
 
         }
         attempts++;
-        // qDebug() << "执行第" << attempts << "次";
     }
-
-    // 输出数组内容
-    // qDebug() << "Months:" << months;
-    // qDebug() << "Days:" << days;
-    // qDebug() << "Hours:" << hours;
-    // qDebug() << "Weathers:" << weathers;
-    // qDebug() << "Temperatures:" << temperatures;
-    // qDebug() << "Humidities:" << humidities;
-    // qDebug() << "Wind Directions:" << wind_directions;
-    // qDebug() << "Wind Strengths:" << wind_strengths;
 
 
 
@@ -329,17 +319,18 @@ bool todayweather::getweather(int month, int day, int hour, QString &temp, QStri
 }
 
 //天气的API请求
-void todayweather::onWeatherRequest() {
+void todayweather::onWeatherRequest()
+{
+    qDebug()<<"发送请求";
+    progressDialog->open();
     api *todayweather_api = new api;
-
-
-    connect(todayweather_api, &api::weatherInfoReady, this, &todayweather::onWeatherInfoReady);
-
     todayweather_api->today_weather(cityBox->currentText());
+    connect(todayweather_api, &api::weatherInfoReady, this, &todayweather::onWeatherInfoReady);
 }
 
-void todayweather::onWeatherInfoReady(const QJsonObject& weatherData) {
-    // 在这里处理获取到的天气数据
-    //qDebug() << "天气信息:" << weatherData;
-    // Example: 更新界面上的标签或者其他控件
+void todayweather::onWeatherInfoReady(const QJsonObject& weatherData)
+{
+    qDebug()<<"数据准备完毕";
+    search();
+    progressDialog->close();
 }
