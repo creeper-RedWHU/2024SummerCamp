@@ -1,6 +1,7 @@
 import datetime
 import numpy as np
 import pandas as pd
+from scipy import io
 import statsmodels.api as sm
 import matplotlib.pyplot as plt
 from statsmodels.stats.diagnostic import acorr_ljungbox
@@ -91,6 +92,7 @@ def SARIMA_Predict(city):
     '思路：获取历史几年的当月数据'
     month_day = {1: 31, 2: 28, 3: 31, 4: 30, 5: 31, 6: 30, 7: 31, 8: 31, 9: 30, 10: 31, 11: 30, 12: 31}
     cursor = conn.cursor()
+    ''''''
     sql = "truncate table future_climate"
     cursor.execute(sql)
     for i in range(0, 2):
@@ -99,7 +101,10 @@ def SARIMA_Predict(city):
         if month_now > 12:
             month_now = 1
             year_now += 1
-        for year in range(year_now - 5, year_now):
+        for year in range(year_now - 5, year_now+1):
+            if i==1:
+                if year==year_now:
+                    break
             GetData.fetchData(city, year, year, month_now, month_now)
         sql = "select * from climate where month=%d and year>=%d and year<%d and city=\'%s\' order by year asc,month asc,day asc" % (
             month_now, year_now - 5, year_now, city)
@@ -133,8 +138,71 @@ def SARIMA_Predict(city):
             cursor.execute(sql)
             conn.commit()
 
+    '思路：读取history数据，横坐标为日期（年-月-日），纵坐标为气温，红色是最高温，蓝色是最低温'
+    '读取±10天的数据'
+
+    max_temp_list=[]
+    min_temp_list=[]
+    date_list=[]
+    '读历史'
+    delta= 10
+    while delta>0:
+        history_ = datetime.datetime.today() - datetime.timedelta(delta)
+        history_year = history_.year
+        history_month = history_.month
+        history_day = history_.day
+        sql = "select max_temperature , min_temperature from climate where year =%d and month =%d and day=%d and city=\'%s\'"
+        sql%=(history_year,history_month,history_day,city)
+        cursor.execute(sql)
+        lx=cursor.fetchall()
+        max_temp_list.append(lx[0][0])
+        min_temp_list.append(lx[0][1])
+        date_list.append(str(history_year)+'-'+str(history_month)+'-'+str(history_day))
+        delta=delta-1
+    print(max_temp_list)
+    print(min_temp_list)
+    delta=0
+    while delta<=10:
+        history_ = datetime.datetime.today() + datetime.timedelta(delta)
+        history_year = history_.year
+        history_month = history_.month
+        history_day = history_.day
+        sql = "select max_temperature , min_temperature from future_climate where year =%d and month =%d and day=%d and city=\'%s\'"
+        sql %= (history_year, history_month, history_day, city)
+        cursor.execute(sql)
+        lx = cursor.fetchall()
+        max_temp_list.append(lx[0][0])
+        min_temp_list.append(lx[0][1])
+        date_list.append(str(history_year) + '-' + str(history_month) + '-' + str(history_day))
+        delta=delta+1
+    for i in range(len(max_temp_list)):
+        max_t=max(max_temp_list[i],min_temp_list[i])
+        min_t=min(max_temp_list[i],min_temp_list[i])
+        max_temp_list[i]=max_t
+        min_temp_list[i]=min_t
+    plt.plot(date_list,max_temp_list,color='r',label='最高温',marker='*')
+    plt.plot(date_list, min_temp_list,color='b',label='最低温',marker='.')
+    plt.xlabel('时间')  # 设置x坐标轴的名称
+    plt.ylabel('温度/℃')  # 设置y坐标轴的名称
+    x_major_locator = plt.MultipleLocator(1)
+    # 把x轴的刻度间隔设置为1，并存在变量里
+    y_major_locator = plt.MultipleLocator(1)
+    plt.xticks(rotation=30)
+    # 把y轴的刻度间隔设置为10，并存在变量里
+    ax = plt.gca()
+    # ax为两条坐标轴的实例
+    ax.xaxis.set_major_locator(x_major_locator)
+    # 把x轴的主刻度设置为1的倍数
+    ax.yaxis.set_major_locator(y_major_locator)
+    #plt.legend()
+    #plt.show()
+    img = io.BytesIO()
+    plt.savefig(img, format='png')
+    img.seek(0)
+    plt.close()  # 关闭图形以释放内存
     cursor.close()
     conn.close()
+    return img
 
 
 if __name__ == '__main__':
