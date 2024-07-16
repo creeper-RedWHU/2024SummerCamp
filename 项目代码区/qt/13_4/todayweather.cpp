@@ -97,7 +97,7 @@ todayweather::todayweather(QWidget *parent) :
     mainLayout->setSizeConstraint(QLayout::SetNoConstraint);
 
     // 创建进度对话框
-    progressDialog = new QProgressDialog("正在预测，请稍候...", "取消", 0, 0, this);
+    progressDialog = new QProgressDialog("正在查询，请稍候...", "取消", 0, 0, this);
     progressDialog->setCancelButton(nullptr); // 隐藏取消按钮
     progressDialog->setRange(0, 0); // 无限进度条
     progressDialog->close();
