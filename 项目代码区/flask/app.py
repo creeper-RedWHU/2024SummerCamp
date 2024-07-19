@@ -1,7 +1,9 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify,send_file
 from GetData import fetchData,GetDataByHours
-from DeepLearning import run_prediction
+from DataAnalyse import predictFuturedays
 from config import Config
+from AnalogData import predict_fake
+from SARIMA import SARIMA_Predict
 import pymysql
 
 app = Flask(__name__)
@@ -58,6 +60,39 @@ def login():
     else:
         return jsonify({'success': False, 'identity': None})
 
+@app.route('/today_weather', methods=['POST'])
+def get_today_weather():
+    data = request.get_json()
+    city = data.get('city')
+
+    GetDataByHours(city)
+
+    #返回数据
+    return jsonify({'success': True, 'message': 'successfully'})
+
+@app.route('/ml', methods=['POST'])
+def ml():
+    data = request.json
+    city = data.get('city')
+
+    predictions = predictFuturedays(city)
+    return jsonify({'predictions': predictions.tolist()})
+
+@app.route('/ml_fake',methods=['POST'])
+def ml_fake():
+    data=request.json
+    max_temperature=int(data.get('max_temperature'))
+    min_temperature=int(data.get('min_temperature'))
+    predict_fake(max_temperature,min_temperature)
+    return jsonify({'success':True})
+
+@app.route('/sarima',methods=['POST'])
+def sarima():
+    data = request.json
+    city = data.get('city')
+    img = SARIMA_Predict(city)
+    return send_file(img, mimetype='image/png')
+
 @app.route('/fetch_weather', methods=['POST'])
 def fetch_weather():
     # 从请求参数中获取城市、开始年、开始月、结束年、结束月
@@ -73,26 +108,6 @@ def fetch_weather():
 
     # 返回成功响应
     return jsonify({'success': True, 'message': 'Data fetched successfully'})
-
-@app.route('/today_weather', methods=['POST'])
-def get_today_weather():
-    data = request.get_json()
-    city = data.get('city')
-
-    GetDataByHours(city)
-
-    #返回数据
-    return jsonify({'success': True, 'message': 'successfully'})
-
-@app.route('/ml', methods=['POST'])
-def ml():
-    data = request.json
-    city = data.get('city')
-    year = int(data.get('year'))
-    month = int(data.get('month'))
-    day = int(data.get('day'))
-    predictions = run_prediction(city, year, month, day)
-    return jsonify({'predictions': predictions.tolist()})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)

@@ -1,0 +1,14 @@
+bs4==0.0.2
+Flask 
+Flask-SocketIO==5.3.6
+keras 
+numpy
+opencv-python-headless
+python-socketio==5.11.3
+requests
+scikit-learn==1.3.2
+tensorflow==2.10.0
+pymysql
+pandas
+matplotlib
+statsmodels
